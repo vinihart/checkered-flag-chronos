@@ -92,7 +92,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-racing-black font-racing">
-      {/* Racing Header */}
+      {/* Racing Header with Track Selection */}
       <RacingHeader
         activeTrack={activeTrack}
         setActiveTrack={setActiveTrack}
@@ -104,7 +104,7 @@ const Index = () => {
         onShowAdminPanel={() => setAdminPanelOpen(true)}
       />
       
-      {/* Filters */}
+      {/* Additional Filters */}
       <LeaderboardFilters
         selectedCarFilter={selectedCarFilter}
         setSelectedCarFilter={setSelectedCarFilter}
@@ -122,6 +122,16 @@ const Index = () => {
               {filteredLapTimes.length} {filteredLapTimes.length === 1 ? "Entry" : "Entries"}
             </div>
           </div>
+          
+          {/* Track Information */}
+          {activeTrack && (
+            <div className="bg-racing-darkgrey p-2 mb-1 flex items-center">
+              <span className="text-white font-formula">
+                <span className="text-racing-silver mr-2">TRACK:</span> 
+                {activeTrack.icon} {activeTrack.name}, {activeTrack.country}
+              </span>
+            </div>
+          )}
           
           {/* Leaderboard Table */}
           {filteredLapTimes.length > 0 ? (

@@ -46,19 +46,19 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
       </div>
       
       <div className="bg-racing-black p-2 border-b border-racing-grey text-white">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
           <div className="flex items-center gap-2">
-            <Flag size={18} />
+            <Flag size={18} className="text-racing-red" />
             <span className="font-formula text-lg">
               {activeTrack ? `${activeTrack.name} - ${activeTrack.country}` : "All Tracks"}
             </span>
           </div>
           
-          <Tabs defaultValue="all" className="w-auto">
-            <TabsList className="bg-racing-darkgrey h-8">
+          <Tabs defaultValue="all" className="w-full md:w-auto">
+            <TabsList className="w-full md:w-auto bg-racing-darkgrey overflow-x-auto flex flex-nowrap">
               <TabsTrigger 
                 value="all" 
-                className="text-xs h-7 data-[state=active]:bg-racing-red"
+                className="text-xs px-4 h-9 data-[state=active]:bg-racing-red whitespace-nowrap"
                 onClick={() => setActiveTrack(null)}
               >
                 All Tracks
@@ -67,7 +67,7 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
                 <TabsTrigger
                   key={track.id}
                   value={track.id}
-                  className="text-xs h-7 data-[state=active]:bg-racing-red"
+                  className="text-xs px-4 h-9 data-[state=active]:bg-racing-red whitespace-nowrap"
                   onClick={() => setActiveTrack(track)}
                 >
                   {track.icon} {track.name}

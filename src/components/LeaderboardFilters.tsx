@@ -25,7 +25,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
     <div className="bg-racing-darkgrey p-2 flex flex-col md:flex-row gap-2 items-center justify-between text-white border-b border-racing-grey">
       <div className="flex items-center gap-2">
         <Filter size={16} />
-        <span className="font-formula text-sm">FILTERS</span>
+        <span className="font-formula text-sm">ADDITIONAL FILTERS</span>
       </div>
       
       <div className="flex flex-col sm:flex-row gap-2 items-center w-full md:w-auto">
