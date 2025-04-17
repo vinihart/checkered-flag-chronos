@@ -1,4 +1,3 @@
-
 // Types for our racing leaderboard application
 
 export interface LapTime {
@@ -7,7 +6,7 @@ export interface LapTime {
   driverTag?: string; // Optional short tag/nickname
   trackId: string;
   carId: string;
-  teamId?: string; // Optional team
+  teamId?: string; // Optional team name (now manually entered)
   lapTime: string; // Format: "1:23.456"
   lapTimeMs: number; // For sorting and calculations
   date: string;
@@ -37,24 +36,65 @@ export interface Team {
   color: string;
 }
 
-// Mock data for the app
+// Updated tracks list from Assetto Corsa Competizione
 export const MOCK_TRACKS: Track[] = [
-  { id: "silverstone", name: "Silverstone", country: "Great Britain", icon: "🇬🇧" },
-  { id: "spa", name: "Spa-Francorchamps", country: "Belgium", icon: "🇧🇪" },
   { id: "monza", name: "Monza", country: "Italy", icon: "🇮🇹" },
+  { id: "zolder", name: "Zolder", country: "Belgium", icon: "🇧🇪" },
+  { id: "brands_hatch", name: "Brands Hatch", country: "United Kingdom", icon: "🇬🇧" },
+  { id: "silverstone", name: "Silverstone", country: "United Kingdom", icon: "🇬🇧" },
+  { id: "paul_ricard", name: "Paul Ricard", country: "France", icon: "🇫🇷" },
+  { id: "misano", name: "Misano", country: "Italy", icon: "🇮🇹" },
+  { id: "spa", name: "Spa-Francorchamps", country: "Belgium", icon: "🇧🇪" },
   { id: "nurburgring", name: "Nürburgring", country: "Germany", icon: "🇩🇪" },
+  { id: "barcelona", name: "Barcelona", country: "Spain", icon: "🇪🇸" },
+  { id: "hungaroring", name: "Hungaroring", country: "Hungary", icon: "🇭🇺" },
+  { id: "zandvoort", name: "Zandvoort", country: "Netherlands", icon: "🇳🇱" },
+  { id: "imola", name: "Imola", country: "Italy", icon: "🇮🇹" },
   { id: "suzuka", name: "Suzuka", country: "Japan", icon: "🇯🇵" },
+  { id: "kyalami", name: "Kyalami", country: "South Africa", icon: "🇿🇦" },
+  { id: "mount_panorama", name: "Mount Panorama", country: "Australia", icon: "🇦🇺" },
+  { id: "laguna_seca", name: "Laguna Seca", country: "United States", icon: "🇺🇸" },
+  { id: "oulton_park", name: "Oulton Park", country: "United Kingdom", icon: "🇬🇧" },
+  { id: "donington", name: "Donington", country: "United Kingdom", icon: "🇬🇧" },
+  { id: "snetterton", name: "Snetterton", country: "United Kingdom", icon: "🇬🇧" },
+  { id: "cota", name: "Circuit of the Americas", country: "United States", icon: "🇺🇸" },
+  { id: "indianapolis", name: "Indianapolis", country: "United States", icon: "🇺🇸" },
+  { id: "watkins_glen", name: "Watkins Glen", country: "United States", icon: "🇺🇸" },
 ];
 
+// Updated cars list from Assetto Corsa Competizione
 export const MOCK_CARS: Car[] = [
-  { id: "mercedes", make: "Mercedes", model: "AMG GT3", icon: "M" },
-  { id: "audi", make: "Audi", model: "R8 LMS GT3", icon: "A" },
-  { id: "bmw", make: "BMW", model: "M4 GT3", icon: "B" },
-  { id: "ferrari", make: "Ferrari", model: "488 GT3", icon: "F" },
-  { id: "lamborghini", make: "Lamborghini", model: "Huracan GT3", icon: "L" },
-  { id: "porsche", make: "Porsche", model: "911 GT3 R", icon: "P" },
+  { id: "amr_v12_vantage_gt3", make: "Aston Martin", model: "V12 Vantage GT3", icon: "A" },
+  { id: "amr_v8_vantage_gt3", make: "Aston Martin", model: "V8 Vantage GT3", icon: "A" },
+  { id: "audi_r8_lms", make: "Audi", model: "R8 LMS", icon: "A" },
+  { id: "audi_r8_lms_evo", make: "Audi", model: "R8 LMS Evo", icon: "A" },
+  { id: "audi_r8_lms_evo_ii", make: "Audi", model: "R8 LMS Evo II", icon: "A" },
+  { id: "bentley_continental_gt3_2016", make: "Bentley", model: "Continental GT3 2016", icon: "B" },
+  { id: "bentley_continental_gt3_2018", make: "Bentley", model: "Continental GT3 2018", icon: "B" },
+  { id: "bmw_m4_gt3", make: "BMW", model: "M4 GT3", icon: "B" },
+  { id: "bmw_m6_gt3", make: "BMW", model: "M6 GT3", icon: "B" },
+  { id: "ferrari_488_gt3", make: "Ferrari", model: "488 GT3", icon: "F" },
+  { id: "ferrari_488_gt3_evo", make: "Ferrari", model: "488 GT3 Evo", icon: "F" },
+  { id: "ferrari_296_gt3", make: "Ferrari", model: "296 GT3", icon: "F" },
+  { id: "honda_nsx_gt3", make: "Honda", model: "NSX GT3", icon: "H" },
+  { id: "honda_nsx_gt3_evo", make: "Honda", model: "NSX GT3 Evo", icon: "H" },
+  { id: "lamborghini_huracan_gt3", make: "Lamborghini", model: "Huracán GT3", icon: "L" },
+  { id: "lamborghini_huracan_gt3_evo", make: "Lamborghini", model: "Huracán GT3 Evo", icon: "L" },
+  { id: "lamborghini_huracan_gt3_evo2", make: "Lamborghini", model: "Huracán GT3 Evo2", icon: "L" },
+  { id: "lexus_rc_f_gt3", make: "Lexus", model: "RC F GT3", icon: "L" },
+  { id: "mclaren_650s_gt3", make: "McLaren", model: "650S GT3", icon: "M" },
+  { id: "mclaren_720s_gt3", make: "McLaren", model: "720S GT3", icon: "M" },
+  { id: "mclaren_720s_gt3_evo", make: "McLaren", model: "720S GT3 Evo", icon: "M" },
+  { id: "mercedes_amg_gt3", make: "Mercedes-AMG", model: "GT3 2015", icon: "M" },
+  { id: "mercedes_amg_gt3_evo", make: "Mercedes-AMG", model: "GT3 2020", icon: "M" },
+  { id: "nissan_gt_r_nismo_gt3_2017", make: "Nissan", model: "GT-R Nismo GT3 2017", icon: "N" },
+  { id: "nissan_gt_r_nismo_gt3_2018", make: "Nissan", model: "GT-R Nismo GT3 2018", icon: "N" },
+  { id: "porsche_991_gt3_r", make: "Porsche", model: "991 GT3 R", icon: "P" },
+  { id: "porsche_991ii_gt3_r", make: "Porsche", model: "991 II GT3 R", icon: "P" },
+  { id: "porsche_992_gt3_r", make: "Porsche", model: "992 GT3 R", icon: "P" },
 ];
 
+// Now teams are user-entered, but keeping MOCK_TEAMS for backward compatibility
 export const MOCK_TEAMS: Team[] = [
   { id: "amg", name: "AMG Team", icon: "M", color: "#00A15F" },
   { id: "audi_sport", name: "Audi Sport", icon: "A", color: "#E10600" },
@@ -64,6 +104,7 @@ export const MOCK_TEAMS: Team[] = [
   { id: "porsche_racing", name: "Porsche Racing", icon: "P", color: "#FFFFFF" },
 ];
 
+// Mock data for the app
 export const MOCK_LAP_TIMES: LapTime[] = [
   {
     id: "1",

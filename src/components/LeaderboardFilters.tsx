@@ -1,9 +1,10 @@
 
 import React from "react";
-import { Car, Team, MOCK_CARS, MOCK_TEAMS } from "@/types/racing";
-import { Filter, Car as CarIcon } from "lucide-react";
+import { Car, MOCK_CARS } from "@/types/racing";
+import { Filter, Car as CarIcon, Users } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface LeaderboardFiltersProps {
   selectedCarFilter: string;
@@ -46,20 +47,13 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
         </div>
         
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-racing-silver">Team</span>
-          <Select value={selectedTeamFilter} onValueChange={setSelectedTeamFilter}>
-            <SelectTrigger className="bg-racing-black border-racing-grey text-white h-8 w-full sm:w-40">
-              <SelectValue placeholder="All Teams" />
-            </SelectTrigger>
-            <SelectContent className="bg-racing-black border-racing-grey text-white">
-              <SelectItem value="all_teams">All Teams</SelectItem>
-              {MOCK_TEAMS.map((team: Team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  {team.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Users size={16} className="text-racing-silver" />
+          <Input
+            value={selectedTeamFilter}
+            onChange={(e) => setSelectedTeamFilter(e.target.value)}
+            placeholder="Team Name"
+            className="bg-racing-black border-racing-grey text-white h-8 w-full sm:w-40"
+          />
         </div>
         
         <Button

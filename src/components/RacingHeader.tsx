@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Car, Team, Track } from "@/types/racing";
+import { Track } from "@/types/racing";
 import { Clock, Flag, Users } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -25,7 +25,7 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
     <div className={`w-full ${className}`}>
       <div className="bg-racing-red p-2 flex items-center justify-between">
         <div className="text-white font-formula font-bold text-xl md:text-2xl tracking-wider">
-          CHECKERED FLAG CHRONOS
+          RANKING ACC BRASIL
         </div>
         <div className="text-white flex items-center gap-3">
           <button

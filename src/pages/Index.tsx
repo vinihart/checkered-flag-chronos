@@ -14,7 +14,7 @@ const Index = () => {
   // Filters
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
   const [selectedCarFilter, setSelectedCarFilter] = useState("all_cars");
-  const [selectedTeamFilter, setSelectedTeamFilter] = useState("all_teams");
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState("");
   
   // Modals
   const [submitFormOpen, setSubmitFormOpen] = useState(false);
@@ -38,9 +38,9 @@ const Index = () => {
       return false;
     }
     
-    // Team filter
-    if (selectedTeamFilter !== "all_teams" && lap.teamId !== selectedTeamFilter) {
-      return false;
+    // Team filter - now using string match for manually entered team names
+    if (selectedTeamFilter && lap.teamId) {
+      return lap.teamId.toLowerCase().includes(selectedTeamFilter.toLowerCase());
     }
     
     return true;
@@ -50,7 +50,7 @@ const Index = () => {
   const resetFilters = () => {
     setActiveTrack(null);
     setSelectedCarFilter("all_cars");
-    setSelectedTeamFilter("all_teams");
+    setSelectedTeamFilter("");
   };
   
   // Add or update lap time

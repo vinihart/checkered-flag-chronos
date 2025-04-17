@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Car, LapTime, Team, Track, MOCK_CARS, MOCK_TEAMS, MOCK_TRACKS, lapTimeToMs } from "@/types/racing";
+import { Car, LapTime, Track, MOCK_CARS, MOCK_TRACKS, lapTimeToMs } from "@/types/racing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,7 +27,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
   const [driverTag, setDriverTag] = useState("");
   const [selectedTrack, setSelectedTrack] = useState("");
   const [selectedCar, setSelectedCar] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("no_team");
+  const [teamName, setTeamName] = useState("");
   const [lapTime, setLapTime] = useState("");
   const [lapTimeError, setLapTimeError] = useState("");
 
@@ -37,7 +37,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
       setDriverTag(editingLapTime.driverTag || "");
       setSelectedTrack(editingLapTime.trackId);
       setSelectedCar(editingLapTime.carId);
-      setSelectedTeam(editingLapTime.teamId || "no_team");
+      setTeamName(editingLapTime.teamId || "");
       setLapTime(editingLapTime.lapTime);
     } else {
       resetForm();
@@ -49,7 +49,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
     setDriverTag("");
     setSelectedTrack("");
     setSelectedCar("");
-    setSelectedTeam("no_team");
+    setTeamName("");
     setLapTime("");
     setLapTimeError("");
   };
@@ -83,7 +83,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
       driverTag: driverTag || undefined,
       trackId: selectedTrack,
       carId: selectedCar,
-      teamId: selectedTeam !== "no_team" ? selectedTeam : undefined,
+      teamId: teamName || undefined,
       lapTime,
       lapTimeMs: lapTimeToMs(lapTime),
       date: new Date().toISOString().split('T')[0],
@@ -202,24 +202,14 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-racing-silver">Team (Optional)</label>
-              <Select
-                value={selectedTeam}
-                onValueChange={setSelectedTeam}
-                disabled={!isAdmin && !!editingLapTime}
-              >
-                <SelectTrigger className="bg-racing-black border-racing-grey text-white">
-                  <SelectValue placeholder="Select a team" />
-                </SelectTrigger>
-                <SelectContent className="bg-racing-black border-racing-grey text-white">
-                  <SelectItem value="no_team">No Team</SelectItem>
-                  {MOCK_TEAMS.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium text-racing-silver">Team Name (Optional)</label>
+              <Input 
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="Enter team name"
+                className="bg-racing-black border-racing-grey text-white"
+                readOnly={!isAdmin && !!editingLapTime}
+              />
             </div>
             
             <div className="space-y-2">
