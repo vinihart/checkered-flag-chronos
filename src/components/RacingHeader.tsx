@@ -1,7 +1,7 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Track } from "@/types/racing";
-import { Clock, Flag, Users, ChevronDown } from "lucide-react";
+import { Clock, Flag, Users, ChevronDown, User } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { Link } from "react-router-dom";
 
 interface RacingHeaderProps {
   activeTrack: Track | null;
@@ -19,6 +20,14 @@ interface RacingHeaderProps {
   className?: string;
 }
 
+type PilotInfo = {
+  pilot: string;
+  pilotTag?: string;
+  mainCar: string;
+  platform: string;
+  team?: string;
+};
+
 const RacingHeader: React.FC<RacingHeaderProps> = ({
   activeTrack,
   setActiveTrack,
@@ -27,6 +36,16 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
   onShowAdminPanel,
   className,
 }) => {
+  const [pilotInfo, setPilotInfo] = useState<PilotInfo | null>(null);
+
+  useEffect(() => {
+    // Load pilot info from localStorage
+    const storedPilotInfo = localStorage.getItem("pilotRegistration");
+    if (storedPilotInfo) {
+      setPilotInfo(JSON.parse(storedPilotInfo));
+    }
+  }, []);
+
   return (
     <div className={`w-full ${className}`}>
       <div className="bg-racing-red p-2 flex items-center justify-between">
@@ -34,6 +53,15 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
           RANKING ACC BRASIL
         </div>
         <div className="text-white flex items-center gap-3">
+          {pilotInfo && (
+            <div className="hidden md:flex items-center gap-2 bg-racing-darkgrey/80 py-1 px-3 rounded">
+              <User size={16} />
+              <span>
+                {pilotInfo.pilot}
+                {pilotInfo.pilotTag && ` (${pilotInfo.pilotTag})`}
+              </span>
+            </div>
+          )}
           <button
             onClick={onShowSubmitForm}
             className="bg-racing-darkgrey hover:bg-racing-black transition-colors py-1 px-3 rounded flex items-center gap-1"
@@ -81,6 +109,15 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
               </SelectContent>
             </Select>
           </div>
+          
+          {pilotInfo && (
+            <Link 
+              to="/" 
+              className="text-sm text-racing-silver hover:text-white transition-colors"
+            >
+              Change Registration
+            </Link>
+          )}
         </div>
       </div>
     </div>
