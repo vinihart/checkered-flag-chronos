@@ -35,7 +35,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
               <SelectValue placeholder="All Cars" />
             </SelectTrigger>
             <SelectContent className="bg-racing-black border-racing-grey text-white">
-              <SelectItem value="">All Cars</SelectItem>
+              <SelectItem value="all_cars">All Cars</SelectItem>
               {MOCK_CARS.map((car: Car) => (
                 <SelectItem key={car.id} value={car.id}>
                   {car.make} {car.model}
@@ -52,7 +52,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
               <SelectValue placeholder="All Teams" />
             </SelectTrigger>
             <SelectContent className="bg-racing-black border-racing-grey text-white">
-              <SelectItem value="">All Teams</SelectItem>
+              <SelectItem value="all_teams">All Teams</SelectItem>
               {MOCK_TEAMS.map((team: Team) => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name}

@@ -27,7 +27,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
   const [driverTag, setDriverTag] = useState("");
   const [selectedTrack, setSelectedTrack] = useState("");
   const [selectedCar, setSelectedCar] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState("no_team");
   const [lapTime, setLapTime] = useState("");
   const [lapTimeError, setLapTimeError] = useState("");
 
@@ -37,7 +37,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
       setDriverTag(editingLapTime.driverTag || "");
       setSelectedTrack(editingLapTime.trackId);
       setSelectedCar(editingLapTime.carId);
-      setSelectedTeam(editingLapTime.teamId || "");
+      setSelectedTeam(editingLapTime.teamId || "no_team");
       setLapTime(editingLapTime.lapTime);
     } else {
       resetForm();
@@ -49,7 +49,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
     setDriverTag("");
     setSelectedTrack("");
     setSelectedCar("");
-    setSelectedTeam("");
+    setSelectedTeam("no_team");
     setLapTime("");
     setLapTimeError("");
   };
@@ -83,7 +83,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
       driverTag: driverTag || undefined,
       trackId: selectedTrack,
       carId: selectedCar,
-      teamId: selectedTeam || undefined,
+      teamId: selectedTeam !== "no_team" ? selectedTeam : undefined,
       lapTime,
       lapTimeMs: lapTimeToMs(lapTime),
       date: new Date().toISOString().split('T')[0],
@@ -212,7 +212,7 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
                   <SelectValue placeholder="Select a team" />
                 </SelectTrigger>
                 <SelectContent className="bg-racing-black border-racing-grey text-white">
-                  <SelectItem value="">No Team</SelectItem>
+                  <SelectItem value="no_team">No Team</SelectItem>
                   {MOCK_TEAMS.map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}

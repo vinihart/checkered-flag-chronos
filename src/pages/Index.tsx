@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { LapTime, Track, MOCK_LAP_TIMES, MOCK_TRACKS, detectAnomalies } from "@/types/racing";
 import RacingHeader from "@/components/RacingHeader";
@@ -12,8 +13,8 @@ const Index = () => {
   
   // Filters
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
-  const [selectedCarFilter, setSelectedCarFilter] = useState("");
-  const [selectedTeamFilter, setSelectedTeamFilter] = useState("");
+  const [selectedCarFilter, setSelectedCarFilter] = useState("all_cars");
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState("all_teams");
   
   // Modals
   const [submitFormOpen, setSubmitFormOpen] = useState(false);
@@ -33,12 +34,12 @@ const Index = () => {
     }
     
     // Car filter
-    if (selectedCarFilter && lap.carId !== selectedCarFilter) {
+    if (selectedCarFilter !== "all_cars" && lap.carId !== selectedCarFilter) {
       return false;
     }
     
     // Team filter
-    if (selectedTeamFilter && lap.teamId !== selectedTeamFilter) {
+    if (selectedTeamFilter !== "all_teams" && lap.teamId !== selectedTeamFilter) {
       return false;
     }
     
@@ -48,8 +49,8 @@ const Index = () => {
   // Reset all filters
   const resetFilters = () => {
     setActiveTrack(null);
-    setSelectedCarFilter("");
-    setSelectedTeamFilter("");
+    setSelectedCarFilter("all_cars");
+    setSelectedTeamFilter("all_teams");
   };
   
   // Add or update lap time
