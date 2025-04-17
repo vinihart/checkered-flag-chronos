@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Titillium+Web:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -98,4 +100,41 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Racing application specific styles */
+  .font-racing {
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+  
+  .font-formula {
+    font-family: 'Titillium Web', Arial, sans-serif;
+    letter-spacing: 0.02em;
+  }
+  
+  /* Status indicators */
+  .status-improved {
+    @apply text-status-improved;
+  }
+  
+  .status-slower {
+    @apply text-status-slower;
+  }
+  
+  .status-best {
+    @apply text-status-best;
+  }
+  
+  /* Animation for position changes */
+  .position-change {
+    @apply animate-position-change;
+  }
+}
+
+/* Racing-specific utility classes */
+.racing-gradient {
+  background: linear-gradient(180deg, #121212 0%, #1F1F1F 100%);
+}
+
+.team-pill {
+  @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold;
 }

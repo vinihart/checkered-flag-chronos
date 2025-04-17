@@ -1,0 +1,144 @@
+
+import React from "react";
+import { LapTime, Car, Team, Track, MOCK_CARS, MOCK_TEAMS, MOCK_TRACKS } from "@/types/racing";
+import { AlertTriangle, ArrowDown, ArrowUp, Minus } from "lucide-react";
+
+interface LeaderboardTableProps {
+  lapTimes: LapTime[];
+  onEditLapTime?: (lapTime: LapTime) => void;
+}
+
+const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
+  lapTimes,
+  onEditLapTime,
+}) => {
+  // Helper function to get team by ID
+  const getTeam = (teamId: string | undefined): Team | undefined => {
+    if (!teamId) return undefined;
+    return MOCK_TEAMS.find((team) => team.id === teamId);
+  };
+
+  // Helper function to get car by ID
+  const getCar = (carId: string): Car | undefined => {
+    return MOCK_CARS.find((car) => car.id === carId);
+  };
+
+  // Helper function to get track by ID
+  const getTrack = (trackId: string): Track | undefined => {
+    return MOCK_TRACKS.find((track) => track.id === trackId);
+  };
+
+  // Helper function to determine the color based on status
+  const getStatusColor = (status: string | undefined): string => {
+    switch (status) {
+      case "improved":
+        return "text-status-improved";
+      case "slower":
+        return "text-status-slower";
+      case "best":
+        return "text-status-best";
+      default:
+        return "text-status-neutral";
+    }
+  };
+
+  // Helper function to render position change indicator
+  const renderPositionChange = (change: number | undefined) => {
+    if (!change || change === 0) {
+      return <Minus size={14} className="text-status-neutral" />;
+    }
+    
+    if (change > 0) {
+      return (
+        <div className="flex items-center gap-1 text-status-improved">
+          <ArrowUp size={14} />
+          <span>{change}</span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center gap-1 text-status-slower">
+        <ArrowDown size={14} />
+        <span>{Math.abs(change)}</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="bg-racing-black text-white w-full overflow-hidden rounded-sm">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-racing-darkgrey border-b border-racing-grey">
+            <th className="py-2 px-3 text-left text-xs font-formula tracking-wider w-10">POS</th>
+            <th className="py-2 px-3 text-left text-xs font-formula tracking-wider">DRIVER</th>
+            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">CAR</th>
+            <th className="py-2 px-3 text-left text-xs font-formula tracking-wider w-24 hidden sm:table-cell">TEAM</th>
+            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-24">LAP TIME</th>
+            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-20 hidden sm:table-cell">TRACK</th>
+            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">DIFF</th>
+            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">+/-</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lapTimes.map((lapTime, index) => {
+            const team = getTeam(lapTime.teamId);
+            const car = getCar(lapTime.carId);
+            const track = getTrack(lapTime.trackId);
+            
+            // Calculate gap to leader
+            const leaderTime = lapTimes[0].lapTimeMs;
+            const timeDiff = lapTime.lapTimeMs - leaderTime;
+            const formattedDiff = index === 0 
+              ? "-" 
+              : `+${(timeDiff / 1000).toFixed(3)}`;
+            
+            return (
+              <tr 
+                key={lapTime.id}
+                className={`border-b border-racing-grey hover:bg-racing-darkgrey cursor-pointer transition-colors ${index % 2 === 0 ? "bg-racing-black" : "bg-[#1A1A1A]"}`}
+                onClick={() => onEditLapTime && onEditLapTime(lapTime)}
+              >
+                <td className="py-1.5 px-3 text-left font-formula font-bold">
+                  {index + 1}
+                </td>
+                <td className="py-1.5 px-3 text-left font-formula">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">{lapTime.driverTag || lapTime.driverName.substring(0, 3).toUpperCase()}</span>
+                    <span className="hidden sm:inline text-racing-silver text-sm">{lapTime.driverName}</span>
+                    {lapTime.isFlagged && (
+                      <AlertTriangle size={14} className="text-yellow-500 ml-1" />
+                    )}
+                  </div>
+                </td>
+                <td 
+                  className="py-1.5 px-3 text-center text-sm font-bold" 
+                  style={{ backgroundColor: team?.color || "transparent" }}
+                >
+                  {car?.icon}
+                </td>
+                <td className="py-1.5 px-3 text-left hidden sm:table-cell">
+                  <span className="text-racing-silver text-sm">{team?.name || "-"}</span>
+                </td>
+                <td className={`py-1.5 px-3 text-center font-formula font-bold ${getStatusColor(lapTime.status)}`}>
+                  {lapTime.lapTime}
+                </td>
+                <td className="py-1.5 px-3 text-center text-racing-silver text-sm hidden sm:table-cell">
+                  {track?.name || "-"}
+                </td>
+                <td className="py-1.5 px-3 text-center font-formula text-sm">
+                  {formattedDiff}
+                </td>
+                <td className="py-1.5 px-3 text-center">
+                  {renderPositionChange(lapTime.positionChange)}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default LeaderboardTable;

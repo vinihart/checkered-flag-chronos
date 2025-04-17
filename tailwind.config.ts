@@ -61,6 +61,25 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Racing theme colors
+				racing: {
+					red: '#E10600',       // F1 primary red
+					black: '#121212',     // Dark background
+					darkgrey: '#1F1F1F',  // Secondary background
+					grey: '#6C6C6C',      // Neutral text
+					silver: '#F1F1F1',    // Light text
+					yellow: '#FFCB00',    // Warning/highlight
+					green: '#00A15F',     // Positive/improving time
+					purple: '#800080',    // Best sector time
+					blue: '#0600EF'       // Team color (e.g., Red Bull)
+				},
+				// Status colors
+				status: {
+					improved: '#00A15F',  // Green for improved time
+					slower: '#E10600',    // Red for slower time
+					best: '#800080',      // Purple for best time
+					neutral: '#FFFFFF'    // White for neutral
 				}
 			},
 			borderRadius: {
@@ -84,11 +103,36 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'position-change': {
+					'0%, 100%': {
+						transform: 'translateX(0)'
+					},
+					'10%, 90%': {
+						transform: 'translateX(3px)'
+					},
+					'20%, 80%': {
+						transform: 'translateX(0)'
+					},
+					'30%, 70%': {
+						transform: 'translateX(3px)'
+					},
+					'40%, 60%': {
+						transform: 'translateX(0)'
+					},
+					'50%': {
+						transform: 'translateX(3px)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'position-change': 'position-change 1s ease-in-out'
+			},
+			fontFamily: {
+				'racing': ['Roboto', 'Arial', 'sans-serif'],
+				'formula': ['Titillium Web', 'Arial', 'sans-serif']
 			}
 		}
 	},
