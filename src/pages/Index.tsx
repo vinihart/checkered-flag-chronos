@@ -104,15 +104,6 @@ const Index = () => {
         onShowAdminPanel={() => setAdminPanelOpen(true)}
       />
       
-      {/* Additional Filters */}
-      <LeaderboardFilters
-        selectedCarFilter={selectedCarFilter}
-        setSelectedCarFilter={setSelectedCarFilter}
-        selectedTeamFilter={selectedTeamFilter}
-        setSelectedTeamFilter={setSelectedTeamFilter}
-        resetFilters={resetFilters}
-      />
-      
       {/* Main content */}
       <div className="flex-1 p-4 flex flex-col items-center">
         <div className="w-full max-w-6xl">

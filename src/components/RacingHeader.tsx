@@ -1,8 +1,14 @@
 
 import React from "react";
 import { Track } from "@/types/racing";
-import { Clock, Flag, Users } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Clock, Flag, Users, ChevronDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 interface RacingHeaderProps {
   activeTrack: Track | null;
@@ -45,36 +51,36 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
         </div>
       </div>
       
-      <div className="bg-racing-black p-2 border-b border-racing-grey text-white">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+      <div className="bg-racing-black p-3 border-b border-racing-grey text-white">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Flag size={18} className="text-racing-red" />
-            <span className="font-formula text-lg">
-              {activeTrack ? `${activeTrack.name} - ${activeTrack.country}` : "All Tracks"}
-            </span>
+            <span className="font-formula text-lg mr-3">Track Selection:</span>
+            
+            <Select 
+              value={activeTrack ? activeTrack.id : "all"} 
+              onValueChange={(value) => {
+                if (value === "all") {
+                  setActiveTrack(null);
+                } else {
+                  const track = tracks.find(t => t.id === value);
+                  if (track) setActiveTrack(track);
+                }
+              }}
+            >
+              <SelectTrigger className="bg-racing-darkgrey border-racing-grey text-white w-64">
+                <SelectValue placeholder="Select a track" />
+              </SelectTrigger>
+              <SelectContent className="bg-racing-black border-racing-grey text-white">
+                <SelectItem value="all">All Tracks</SelectItem>
+                {tracks.map((track) => (
+                  <SelectItem key={track.id} value={track.id}>
+                    {track.icon} {track.name} - {track.country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          
-          <Tabs defaultValue="all" className="w-full md:w-auto">
-            <TabsList className="w-full md:w-auto bg-racing-darkgrey overflow-x-auto flex flex-nowrap">
-              <TabsTrigger 
-                value="all" 
-                className="text-xs px-4 h-9 data-[state=active]:bg-racing-red whitespace-nowrap"
-                onClick={() => setActiveTrack(null)}
-              >
-                All Tracks
-              </TabsTrigger>
-              {tracks.map((track) => (
-                <TabsTrigger
-                  key={track.id}
-                  value={track.id}
-                  className="text-xs px-4 h-9 data-[state=active]:bg-racing-red whitespace-nowrap"
-                  onClick={() => setActiveTrack(track)}
-                >
-                  {track.icon} {track.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
         </div>
       </div>
     </div>
