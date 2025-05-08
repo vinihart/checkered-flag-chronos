@@ -1,16 +1,24 @@
 
 import React from "react";
 import { LapTime, Car, Team, Track, MOCK_CARS, MOCK_TEAMS, MOCK_TRACKS } from "@/types/racing";
-import { AlertTriangle, ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Flag, Minus } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface LeaderboardTableProps {
   lapTimes: LapTime[];
   onEditLapTime?: (lapTime: LapTime) => void;
+  onReportLapTime?: (lapTime: LapTime) => void;
 }
 
 const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   lapTimes,
   onEditLapTime,
+  onReportLapTime,
 }) => {
   // Helper function to get team by ID
   const getTeam = (teamId: string | undefined): Team | undefined => {
@@ -78,63 +86,100 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-20 hidden sm:table-cell">TRACK</th>
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">DIFF</th>
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">+/-</th>
+            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">ACTION</th>
           </tr>
         </thead>
         <tbody>
-          {lapTimes.map((lapTime, index) => {
-            const team = getTeam(lapTime.teamId);
-            const car = getCar(lapTime.carId);
-            const track = getTrack(lapTime.trackId);
-            
-            // Calculate gap to leader
-            const leaderTime = lapTimes[0].lapTimeMs;
-            const timeDiff = lapTime.lapTimeMs - leaderTime;
-            const formattedDiff = index === 0 
-              ? "-" 
-              : `+${(timeDiff / 1000).toFixed(3)}`;
-            
-            return (
-              <tr 
-                key={lapTime.id}
-                className={`border-b border-racing-grey hover:bg-racing-darkgrey cursor-pointer transition-colors ${index % 2 === 0 ? "bg-racing-black" : "bg-[#1A1A1A]"}`}
-                onClick={() => onEditLapTime && onEditLapTime(lapTime)}
-              >
-                <td className="py-1.5 px-3 text-left font-formula font-bold">
-                  {index + 1}
-                </td>
-                <td className="py-1.5 px-3 text-left font-formula">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold">{lapTime.driverTag || lapTime.driverName.substring(0, 3).toUpperCase()}</span>
-                    <span className="hidden sm:inline text-racing-silver text-sm">{lapTime.driverName}</span>
-                    {lapTime.isFlagged && (
-                      <AlertTriangle size={14} className="text-yellow-500 ml-1" />
-                    )}
-                  </div>
-                </td>
-                <td 
-                  className="py-1.5 px-3 text-center text-sm font-bold" 
-                  style={{ backgroundColor: team?.color || "transparent" }}
+          {lapTimes.length === 0 ? (
+            <tr>
+              <td colSpan={9} className="py-4 text-center text-racing-silver">
+                No lap times recorded yet. Be the first to submit your time!
+              </td>
+            </tr>
+          ) : (
+            lapTimes.map((lapTime, index) => {
+              const team = getTeam(lapTime.teamId);
+              const car = getCar(lapTime.carId);
+              const track = getTrack(lapTime.trackId);
+              
+              // Calculate gap to leader
+              const leaderTime = lapTimes[0].lapTimeMs;
+              const timeDiff = lapTime.lapTimeMs - leaderTime;
+              const formattedDiff = index === 0 
+                ? "-" 
+                : `+${(timeDiff / 1000).toFixed(3)}`;
+              
+              return (
+                <tr 
+                  key={lapTime.id}
+                  className={`border-b border-racing-grey hover:bg-racing-darkgrey cursor-pointer transition-colors ${index % 2 === 0 ? "bg-racing-black" : "bg-[#1A1A1A]"}`}
+                  onClick={() => onEditLapTime && onEditLapTime(lapTime)}
                 >
-                  {car?.icon}
-                </td>
-                <td className="py-1.5 px-3 text-left hidden sm:table-cell">
-                  <span className="text-racing-silver text-sm">{team?.name || "-"}</span>
-                </td>
-                <td className={`py-1.5 px-3 text-center font-formula font-bold ${getStatusColor(lapTime.status)}`}>
-                  {lapTime.lapTime}
-                </td>
-                <td className="py-1.5 px-3 text-center text-racing-silver text-sm hidden sm:table-cell">
-                  {track?.name || "-"}
-                </td>
-                <td className="py-1.5 px-3 text-center font-formula text-sm">
-                  {formattedDiff}
-                </td>
-                <td className="py-1.5 px-3 text-center">
-                  {renderPositionChange(lapTime.positionChange)}
-                </td>
-              </tr>
-            );
-          })}
+                  <td className="py-1.5 px-3 text-left font-formula font-bold">
+                    {index + 1}
+                  </td>
+                  <td className="py-1.5 px-3 text-left font-formula">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">{lapTime.driverTag || lapTime.driverName.substring(0, 3).toUpperCase()}</span>
+                      <span className="hidden sm:inline text-racing-silver text-sm">{lapTime.driverName}</span>
+                      
+                      {/* Under review indicator */}
+                      {lapTime.underReview && (
+                        <span className="h-3 w-3 bg-yellow-500 rounded-full inline-block ml-1" title="Under review"></span>
+                      )}
+                      
+                      {/* Anomaly detection flag */}
+                      {lapTime.isFlagged && (
+                        <AlertTriangle size={14} className="text-yellow-500 ml-1" title="Flagged as anomaly" />
+                      )}
+                    </div>
+                  </td>
+                  <td 
+                    className="py-1.5 px-3 text-center text-sm font-bold" 
+                    style={{ backgroundColor: team?.color || "transparent" }}
+                  >
+                    {car?.icon}
+                  </td>
+                  <td className="py-1.5 px-3 text-left hidden sm:table-cell">
+                    <span className="text-racing-silver text-sm">{team?.name || "-"}</span>
+                  </td>
+                  <td className={`py-1.5 px-3 text-center font-formula font-bold ${getStatusColor(lapTime.status)}`}>
+                    {lapTime.lapTime}
+                  </td>
+                  <td className="py-1.5 px-3 text-center text-racing-silver text-sm hidden sm:table-cell">
+                    {track?.name || "-"}
+                  </td>
+                  <td className="py-1.5 px-3 text-center font-formula text-sm">
+                    {formattedDiff}
+                  </td>
+                  <td className="py-1.5 px-3 text-center">
+                    {renderPositionChange(lapTime.positionChange)}
+                  </td>
+                  <td className="py-1.5 px-3 text-center">
+                    {/* Report button */}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild onClick={(e) => {
+                          e.stopPropagation();
+                          onReportLapTime && onReportLapTime(lapTime);
+                        }}>
+                          <button 
+                            className="p-1 hover:bg-racing-red/20 rounded text-racing-silver hover:text-racing-red transition-colors"
+                            disabled={lapTime.underReview}
+                          >
+                            <Flag size={16} />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{lapTime.underReview ? "This lap time is under review" : "Report this lap time"}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </td>
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
     </div>

@@ -13,6 +13,7 @@ export interface LapTime {
   status?: "improved" | "slower" | "best" | "neutral";
   positionChange?: number; // Positive for positions gained, negative for positions lost
   isFlagged?: boolean; // For anomaly detection
+  underReview?: boolean; // New field to mark times under review after being reported
 }
 
 export interface Track {
@@ -20,6 +21,8 @@ export interface Track {
   name: string;
   country: string;
   icon?: string;
+  recordTime?: string; // New field for the record time
+  recordTimeMs?: number; // Record time in milliseconds for calculations
 }
 
 export interface Car {
@@ -36,30 +39,30 @@ export interface Team {
   color: string;
 }
 
-// Updated tracks list from Assetto Corsa Competizione
+// Updated tracks list from Assetto Corsa Competizione with record times
 export const MOCK_TRACKS: Track[] = [
-  { id: "monza", name: "Monza", country: "Italy", icon: "🇮🇹" },
-  { id: "zolder", name: "Zolder", country: "Belgium", icon: "🇧🇪" },
-  { id: "brands_hatch", name: "Brands Hatch", country: "United Kingdom", icon: "🇬🇧" },
-  { id: "silverstone", name: "Silverstone", country: "United Kingdom", icon: "🇬🇧" },
-  { id: "paul_ricard", name: "Paul Ricard", country: "France", icon: "🇫🇷" },
-  { id: "misano", name: "Misano", country: "Italy", icon: "🇮🇹" },
-  { id: "spa", name: "Spa-Francorchamps", country: "Belgium", icon: "🇧🇪" },
-  { id: "nurburgring", name: "Nürburgring", country: "Germany", icon: "🇩🇪" },
-  { id: "barcelona", name: "Barcelona", country: "Spain", icon: "🇪🇸" },
-  { id: "hungaroring", name: "Hungaroring", country: "Hungary", icon: "🇭🇺" },
-  { id: "zandvoort", name: "Zandvoort", country: "Netherlands", icon: "🇳🇱" },
-  { id: "imola", name: "Imola", country: "Italy", icon: "🇮🇹" },
-  { id: "suzuka", name: "Suzuka", country: "Japan", icon: "🇯🇵" },
-  { id: "kyalami", name: "Kyalami", country: "South Africa", icon: "🇿🇦" },
-  { id: "mount_panorama", name: "Mount Panorama", country: "Australia", icon: "🇦🇺" },
-  { id: "laguna_seca", name: "Laguna Seca", country: "United States", icon: "🇺🇸" },
-  { id: "oulton_park", name: "Oulton Park", country: "United Kingdom", icon: "🇬🇧" },
-  { id: "donington", name: "Donington", country: "United Kingdom", icon: "🇬🇧" },
-  { id: "snetterton", name: "Snetterton", country: "United Kingdom", icon: "🇬🇧" },
-  { id: "cota", name: "Circuit of the Americas", country: "United States", icon: "🇺🇸" },
-  { id: "indianapolis", name: "Indianapolis", country: "United States", icon: "🇺🇸" },
-  { id: "watkins_glen", name: "Watkins Glen", country: "United States", icon: "🇺🇸" },
+  { id: "monza", name: "Monza", country: "Italy", icon: "🇮🇹", recordTime: "1:47.501", recordTimeMs: 107501 },
+  { id: "zolder", name: "Zolder", country: "Belgium", icon: "🇧🇪", recordTime: "1:28.182", recordTimeMs: 88182 },
+  { id: "brands_hatch", name: "Brands Hatch", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:23.598", recordTimeMs: 83598 },
+  { id: "silverstone", name: "Silverstone", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:57.274", recordTimeMs: 117274 },
+  { id: "paul_ricard", name: "Paul Ricard", country: "France", icon: "🇫🇷", recordTime: "1:53.028", recordTimeMs: 113028 },
+  { id: "misano", name: "Misano", country: "Italy", icon: "🇮🇹", recordTime: "1:33.550", recordTimeMs: 93550 },
+  { id: "spa", name: "Spa-Francorchamps", country: "Belgium", icon: "🇧🇪", recordTime: "2:17.470", recordTimeMs: 137470 },
+  { id: "nurburgring", name: "Nürburgring", country: "Germany", icon: "🇩🇪", recordTime: "1:54.125", recordTimeMs: 114125 },
+  { id: "barcelona", name: "Barcelona", country: "Spain", icon: "🇪🇸", recordTime: "1:43.202", recordTimeMs: 103202 },
+  { id: "hungaroring", name: "Hungaroring", country: "Hungary", icon: "🇭🇺", recordTime: "1:43.389", recordTimeMs: 103389 },
+  { id: "zandvoort", name: "Zandvoort", country: "Netherlands", icon: "🇳🇱", recordTime: "1:35.792", recordTimeMs: 95792 },
+  { id: "imola", name: "Imola", country: "Italy", icon: "🇮🇹", recordTime: "1:41.756", recordTimeMs: 101756 },
+  { id: "suzuka", name: "Suzuka", country: "Japan", icon: "🇯🇵", recordTime: "2:00.124", recordTimeMs: 120124 },
+  { id: "kyalami", name: "Kyalami", country: "South Africa", icon: "🇿🇦", recordTime: "1:40.894", recordTimeMs: 100894 },
+  { id: "mount_panorama", name: "Mount Panorama", country: "Australia", icon: "🇦🇺", recordTime: "2:01.286", recordTimeMs: 121286 },
+  { id: "laguna_seca", name: "Laguna Seca", country: "United States", icon: "🇺🇸", recordTime: "1:22.701", recordTimeMs: 82701 },
+  { id: "oulton_park", name: "Oulton Park", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:32.579", recordTimeMs: 92579 },
+  { id: "donington", name: "Donington", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:26.731", recordTimeMs: 86731 },
+  { id: "snetterton", name: "Snetterton", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:46.118", recordTimeMs: 106118 },
+  { id: "cota", name: "Circuit of the Americas", country: "United States", icon: "🇺🇸", recordTime: "2:04.893", recordTimeMs: 124893 },
+  { id: "indianapolis", name: "Indianapolis", country: "United States", icon: "🇺🇸", recordTime: "1:33.027", recordTimeMs: 93027 },
+  { id: "watkins_glen", name: "Watkins Glen", country: "United States", icon: "🇺🇸", recordTime: "1:44.352", recordTimeMs: 104352 },
 ];
 
 // Updated cars list from Assetto Corsa Competizione
@@ -104,205 +107,8 @@ export const MOCK_TEAMS: Team[] = [
   { id: "porsche_racing", name: "Porsche Racing", icon: "P", color: "#FFFFFF" },
 ];
 
-// Mock data for the app
-export const MOCK_LAP_TIMES: LapTime[] = [
-  {
-    id: "1",
-    driverName: "Lewis Hamilton",
-    driverTag: "HAM",
-    trackId: "silverstone",
-    carId: "mercedes",
-    teamId: "amg",
-    lapTime: "1:52.118",
-    lapTimeMs: 112118,
-    date: "2023-05-15",
-    status: "best",
-    positionChange: 0,
-  },
-  {
-    id: "2",
-    driverName: "Max Verstappen",
-    driverTag: "VER",
-    trackId: "silverstone",
-    carId: "audi",
-    teamId: "audi_sport",
-    lapTime: "1:52.455",
-    lapTimeMs: 112455,
-    date: "2023-05-15",
-    status: "improved",
-    positionChange: 2,
-  },
-  {
-    id: "3",
-    driverName: "Charles Leclerc",
-    driverTag: "LEC",
-    trackId: "silverstone",
-    carId: "ferrari",
-    teamId: "ferrari_racing",
-    lapTime: "1:52.678",
-    lapTimeMs: 112678,
-    date: "2023-05-15",
-    status: "slower",
-    positionChange: -1,
-  },
-  {
-    id: "4",
-    driverName: "Daniel Ricciardo",
-    driverTag: "RIC",
-    trackId: "silverstone",
-    carId: "porsche",
-    teamId: "porsche_racing",
-    lapTime: "1:53.001",
-    lapTimeMs: 113001,
-    date: "2023-05-15",
-    status: "neutral",
-    positionChange: 0,
-  },
-  {
-    id: "5",
-    driverName: "Fernando Alonso",
-    driverTag: "ALO",
-    trackId: "silverstone",
-    carId: "audi",
-    teamId: "audi_sport",
-    lapTime: "1:53.210",
-    lapTimeMs: 113210,
-    date: "2023-05-15",
-    status: "improved",
-    positionChange: 3,
-  },
-  {
-    id: "6",
-    driverName: "Lando Norris",
-    driverTag: "NOR",
-    trackId: "silverstone",
-    carId: "bmw",
-    teamId: "bmw_motorsport",
-    lapTime: "1:53.399",
-    lapTimeMs: 113399,
-    date: "2023-05-15",
-    status: "neutral",
-    positionChange: 0,
-  },
-  {
-    id: "7",
-    driverName: "Carlos Sainz",
-    driverTag: "SAI",
-    trackId: "silverstone",
-    carId: "ferrari",
-    teamId: "ferrari_racing",
-    lapTime: "1:53.542",
-    lapTimeMs: 113542,
-    date: "2023-05-15",
-    status: "slower",
-    positionChange: -2,
-  },
-  {
-    id: "8",
-    driverName: "Sergio Perez",
-    driverTag: "PER",
-    trackId: "silverstone",
-    carId: "audi",
-    teamId: "audi_sport",
-    lapTime: "1:53.788",
-    lapTimeMs: 113788,
-    date: "2023-05-15",
-    status: "neutral",
-    positionChange: 0,
-  },
-  {
-    id: "9",
-    driverName: "Sebastian Vettel",
-    driverTag: "VET",
-    trackId: "silverstone",
-    carId: "porsche",
-    teamId: "porsche_racing",
-    lapTime: "1:53.901",
-    lapTimeMs: 113901,
-    date: "2023-05-15",
-    status: "improved",
-    positionChange: 1,
-  },
-  {
-    id: "10",
-    driverName: "Pierre Gasly",
-    driverTag: "GAS",
-    trackId: "silverstone",
-    carId: "lamborghini",
-    teamId: "lamborghini_squad",
-    lapTime: "1:54.200",
-    lapTimeMs: 114200,
-    date: "2023-05-15",
-    status: "neutral",
-    positionChange: 0,
-    isFlagged: true, // Anomaly detected
-  },
-  {
-    id: "11",
-    driverName: "Yuki Tsunoda",
-    driverTag: "TSU",
-    trackId: "silverstone",
-    carId: "lamborghini",
-    teamId: "lamborghini_squad",
-    lapTime: "1:54.344",
-    lapTimeMs: 114344,
-    date: "2023-05-15",
-    status: "slower",
-    positionChange: -1,
-  },
-  {
-    id: "12",
-    driverName: "George Russell",
-    driverTag: "RUS",
-    trackId: "silverstone",
-    carId: "mercedes",
-    teamId: "amg",
-    lapTime: "1:54.550",
-    lapTimeMs: 114550,
-    date: "2023-05-15",
-    status: "neutral",
-    positionChange: 0,
-  },
-  {
-    id: "13",
-    driverName: "Esteban Ocon",
-    driverTag: "OCO",
-    trackId: "silverstone",
-    carId: "bmw",
-    teamId: "bmw_motorsport",
-    lapTime: "1:54.988",
-    lapTimeMs: 114988,
-    date: "2023-05-15",
-    status: "improved",
-    positionChange: 2,
-  },
-  {
-    id: "14",
-    driverName: "Lance Stroll",
-    driverTag: "STR",
-    trackId: "silverstone",
-    carId: "porsche",
-    teamId: "porsche_racing",
-    lapTime: "1:55.100",
-    lapTimeMs: 115100,
-    date: "2023-05-15",
-    status: "slower",
-    positionChange: -2,
-  },
-  {
-    id: "15",
-    driverName: "Valtteri Bottas",
-    driverTag: "BOT",
-    trackId: "silverstone",
-    carId: "audi",
-    teamId: "audi_sport",
-    lapTime: "1:55.276",
-    lapTimeMs: 115276,
-    date: "2023-05-15",
-    status: "neutral",
-    positionChange: 0,
-  },
-];
+// Emptying the mock data per user request
+export const MOCK_LAP_TIMES: LapTime[] = [];
 
 // Utility function to format lap time from milliseconds to MM:SS.mmm
 export const formatLapTime = (timeMs: number): string => {
@@ -327,7 +133,7 @@ export const lapTimeToMs = (lapTime: string): number => {
 
 // Simple anomaly detection - flags lap times that are significantly faster than the average
 export const detectAnomalies = (lapTimes: LapTime[], threshold = 0.1): LapTime[] => {
-  // Only consider lap times for the same track
+  // Keep existing code for anomaly detection
   const trackGroups = lapTimes.reduce((groups, lap) => {
     if (!groups[lap.trackId]) {
       groups[lap.trackId] = [];
@@ -359,4 +165,18 @@ export const detectAnomalies = (lapTimes: LapTime[], threshold = 0.1): LapTime[]
   });
   
   return flaggedLapTimes;
+};
+
+// New function to report a lap time for review
+export const reportLapTime = (lapTimes: LapTime[], lapTimeId: string): LapTime[] => {
+  return lapTimes.map(lap => 
+    lap.id === lapTimeId ? { ...lap, underReview: true } : lap
+  );
+};
+
+// New function to clear a review flag
+export const clearReviewFlag = (lapTimes: LapTime[], lapTimeId: string): LapTime[] => {
+  return lapTimes.map(lap => 
+    lap.id === lapTimeId ? { ...lap, underReview: false } : lap
+  );
 };

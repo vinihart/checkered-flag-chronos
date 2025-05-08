@@ -1,57 +1,63 @@
 
 import React, { useState, useEffect } from "react";
-import { LapTime, Track, MOCK_LAP_TIMES, MOCK_TRACKS, detectAnomalies } from "@/types/racing";
+import { useNavigate } from "react-router-dom";
+import { LapTime, Track, MOCK_LAP_TIMES, MOCK_TRACKS, detectAnomalies, reportLapTime, clearReviewFlag } from "@/types/racing";
 import RacingHeader from "@/components/RacingHeader";
 import LeaderboardTable from "@/components/LeaderboardTable";
-import LeaderboardFilters from "@/components/LeaderboardFilters";
 import LapTimeForm from "@/components/LapTimeForm";
 import AdminPanel from "@/components/AdminPanel";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   // State for lap times
   const [lapTimes, setLapTimes] = useState<LapTime[]>([]);
   
-  // Filters
+  // Track selection
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
-  const [selectedCarFilter, setSelectedCarFilter] = useState("all_cars");
-  const [selectedTeamFilter, setSelectedTeamFilter] = useState("");
   
   // Modals
   const [submitFormOpen, setSubmitFormOpen] = useState(false);
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
   const [editingLapTime, setEditingLapTime] = useState<LapTime | null>(null);
   
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  // Check if user is logged in
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (!isLoggedIn) {
+      navigate("/login");
+    }
+  }, [navigate]);
+  
   // Load initial data
   useEffect(() => {
+    // In a real app, we would fetch lap times from a database
+    // For this demo, we'll use the MOCK_LAP_TIMES which is now empty as requested
     setLapTimes(MOCK_LAP_TIMES);
+    
+    // Load stored lap times from localStorage if available
+    const storedLapTimes = localStorage.getItem("lapTimes");
+    if (storedLapTimes) {
+      setLapTimes(JSON.parse(storedLapTimes));
+    }
   }, []);
   
-  // Filter lap times based on selected filters
+  // Save lap times to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("lapTimes", JSON.stringify(lapTimes));
+  }, [lapTimes]);
+  
+  // Filter lap times based on selected track
   const filteredLapTimes = lapTimes.filter(lap => {
     // Track filter
     if (activeTrack && lap.trackId !== activeTrack.id) {
       return false;
     }
     
-    // Car filter
-    if (selectedCarFilter !== "all_cars" && lap.carId !== selectedCarFilter) {
-      return false;
-    }
-    
-    // Team filter - now using string match for manually entered team names
-    if (selectedTeamFilter && lap.teamId) {
-      return lap.teamId.toLowerCase().includes(selectedTeamFilter.toLowerCase());
-    }
-    
     return true;
   }).sort((a, b) => a.lapTimeMs - b.lapTimeMs);
-  
-  // Reset all filters
-  const resetFilters = () => {
-    setActiveTrack(null);
-    setSelectedCarFilter("all_cars");
-    setSelectedTeamFilter("");
-  };
   
   // Add or update lap time
   const handleSubmitLapTime = (newLapTime: LapTime) => {
@@ -61,9 +67,19 @@ const Index = () => {
         prev.map(lap => lap.id === newLapTime.id ? newLapTime : lap)
       );
       setEditingLapTime(null);
+      
+      toast({
+        title: "Lap Time Updated",
+        description: "Your lap time has been successfully updated.",
+      });
     } else {
       // Add new lap time
       setLapTimes(prev => [...prev, newLapTime]);
+      
+      toast({
+        title: "Lap Time Submitted",
+        description: "Your lap time has been successfully recorded.",
+      });
     }
   };
   
@@ -72,22 +88,78 @@ const Index = () => {
     // Delete all lap times
     if (id === "delete-all") {
       setLapTimes([]);
+      toast({
+        title: "All Lap Times Deleted",
+        description: "The leaderboard has been cleared.",
+      });
     } else {
       // Delete specific lap time
       setLapTimes(prev => prev.filter(lap => lap.id !== id));
+      toast({
+        title: "Lap Time Deleted",
+        description: "The lap time has been removed from the leaderboard.",
+      });
     }
   };
   
   // Open edit form
   const handleEditLapTime = (lapTime: LapTime) => {
-    setEditingLapTime(lapTime);
-    setSubmitFormOpen(true);
+    // Get pilot info
+    const storedPilotInfo = localStorage.getItem("pilotRegistration");
+    if (storedPilotInfo) {
+      const pilotInfo = JSON.parse(storedPilotInfo);
+      
+      // Only allow editing own lap times
+      if (pilotInfo.pilot === lapTime.driverName) {
+        setEditingLapTime(lapTime);
+        setSubmitFormOpen(true);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Cannot Edit",
+          description: "You can only edit your own lap times.",
+        });
+      }
+    }
+  };
+  
+  // Handle reporting a lap time
+  const handleReportLapTime = (lapTime: LapTime) => {
+    if (lapTime.underReview) {
+      toast({
+        title: "Already Under Review",
+        description: "This lap time is already being reviewed.",
+      });
+      return;
+    }
+    
+    setLapTimes(reportLapTime(lapTimes, lapTime.id));
+    
+    toast({
+      title: "Lap Time Reported",
+      description: "The lap time has been flagged for review.",
+    });
   };
   
   // Run anomaly detection
   const handleRunAnomalyDetection = () => {
     const flaggedLaps = detectAnomalies(lapTimes);
     setLapTimes(flaggedLaps);
+    
+    toast({
+      title: "Anomaly Detection Complete",
+      description: "Suspicious lap times have been flagged for review.",
+    });
+  };
+  
+  // Clear review flag
+  const handleClearReviewFlag = (lapTimeId: string) => {
+    setLapTimes(clearReviewFlag(lapTimes, lapTimeId));
+    
+    toast({
+      title: "Review Complete",
+      description: "The lap time has been approved.",
+    });
   };
 
   return (
@@ -116,22 +188,26 @@ const Index = () => {
           
           {/* Track Information */}
           {activeTrack && (
-            <div className="bg-racing-darkgrey p-2 mb-1 flex items-center">
+            <div className="bg-racing-darkgrey p-2 mb-1 flex items-center justify-between">
               <span className="text-white font-formula">
                 <span className="text-racing-silver mr-2">TRACK:</span> 
                 {activeTrack.icon} {activeTrack.name}, {activeTrack.country}
               </span>
+              
+              {activeTrack.recordTime && (
+                <span className="text-white font-formula text-sm">
+                  <span className="text-racing-silver">GT3 Record:</span> {activeTrack.recordTime}
+                </span>
+              )}
             </div>
           )}
           
           {/* Leaderboard Table */}
-          {filteredLapTimes.length > 0 ? (
-            <LeaderboardTable lapTimes={filteredLapTimes} />
-          ) : (
-            <div className="bg-racing-darkgrey p-6 text-center text-racing-silver">
-              No lap times found. Adjust filters or submit a new lap time.
-            </div>
-          )}
+          <LeaderboardTable 
+            lapTimes={filteredLapTimes} 
+            onEditLapTime={handleEditLapTime} 
+            onReportLapTime={handleReportLapTime}
+          />
         </div>
       </div>
       
@@ -144,7 +220,7 @@ const Index = () => {
         isAdmin={true} // For simplicity, everyone is admin in this demo
       />
       
-      {/* Admin Panel */}
+      {/* Admin Panel - enhanced with review functionality */}
       <AdminPanel
         open={adminPanelOpen}
         onOpenChange={setAdminPanelOpen}
@@ -152,6 +228,7 @@ const Index = () => {
         onEditLapTime={handleEditLapTime}
         onDeleteLapTime={handleDeleteLapTime}
         onRunAnomalyDetection={handleRunAnomalyDetection}
+        onClearReviewFlag={handleClearReviewFlag}
       />
     </div>
   );

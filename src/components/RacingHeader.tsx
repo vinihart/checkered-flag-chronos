@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Track } from "@/types/racing";
-import { Clock, Flag, Users, ChevronDown, User } from "lucide-react";
+import { Clock, Flag, Users, Trophy, User, LogOut } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface RacingHeaderProps {
   activeTrack: Track | null;
@@ -37,14 +38,35 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
   className,
 }) => {
   const [pilotInfo, setPilotInfo] = useState<PilotInfo | null>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (!isLoggedIn) {
+      navigate("/");
+      return;
+    }
+    
     // Load pilot info from localStorage
     const storedPilotInfo = localStorage.getItem("pilotRegistration");
     if (storedPilotInfo) {
       setPilotInfo(JSON.parse(storedPilotInfo));
     }
-  }, []);
+  }, [navigate]);
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    
+    navigate("/login");
+  };
 
   return (
     <div className={`w-full ${className}`}>
@@ -76,11 +98,18 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
             <Users size={16} />
             <span className="hidden md:inline">Admin</span>
           </button>
+          <button
+            onClick={handleLogout}
+            className="bg-racing-darkgrey hover:bg-racing-black transition-colors py-1 px-3 rounded flex items-center gap-1"
+          >
+            <LogOut size={16} />
+            <span className="hidden md:inline">Logout</span>
+          </button>
         </div>
       </div>
       
       <div className="bg-racing-black p-3 border-b border-racing-grey text-white">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div className="flex items-center gap-2">
             <Flag size={18} className="text-racing-red" />
             <span className="font-formula text-lg mr-3">Track Selection:</span>
@@ -110,13 +139,14 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
             </Select>
           </div>
           
-          {pilotInfo && (
-            <Link 
-              to="/" 
-              className="text-sm text-racing-silver hover:text-white transition-colors"
-            >
-              Change Registration
-            </Link>
+          {activeTrack && activeTrack.recordTime && (
+            <div className="flex items-center gap-2 bg-racing-darkgrey/30 py-1.5 px-3 rounded">
+              <Trophy size={16} className="text-racing-red" />
+              <span className="text-sm">
+                <span className="font-formula">GT3 RECORD:</span>{" "}
+                <span className="text-racing-silver">{activeTrack.recordTime}</span>
+              </span>
+            </div>
           )}
         </div>
       </div>
