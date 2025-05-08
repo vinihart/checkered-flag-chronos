@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 interface Race {
   id: string;
@@ -11,6 +12,7 @@ interface Race {
   track: string;
   series: string;
   url: string;
+  type: 'quick' | 'halfHour' | 'mini';
 }
 
 const SimGridRaces = () => {
@@ -18,45 +20,53 @@ const SimGridRaces = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("upcoming");
 
-  // For demo purposes, populate with mock data
+  // For demo purposes, populate with mock data representing the different series
   useEffect(() => {
     // In a real application, this would fetch data from The SimGrid API
+    const currentDate = new Date();
+    
+    // Quick Race (updates every 5 minutes)
+    const quickRaceDate = new Date(currentDate);
+    quickRaceDate.setMinutes(quickRaceDate.getMinutes() + (5 - (quickRaceDate.getMinutes() % 5)));
+    
+    // Half Hour Dash (updates every 20 minutes)
+    const halfHourDate = new Date(currentDate);
+    halfHourDate.setMinutes(halfHourDate.getMinutes() + (20 - (halfHourDate.getMinutes() % 20)));
+    
+    // Mini Enduro (updates every 30 minutes)
+    const miniEnduroDate = new Date(currentDate);
+    miniEnduroDate.setMinutes(miniEnduroDate.getMinutes() + (30 - (miniEnduroDate.getMinutes() % 30)));
+    
     const mockRaces: Race[] = [
       {
         id: "1",
-        title: "GT World Challenge Europe - Round 1",
-        championship: "GT World Challenge",
-        date: "2025-05-15",
+        title: "Quick Race",
+        championship: "Quick Race Series",
+        date: quickRaceDate.toISOString(),
         track: "Monza",
         series: "GT3",
-        url: "https://www.thesimgrid.com/championships/gt-world-challenge-europe"
+        url: "https://www.thesimgrid.com/championships/14395",
+        type: "quick"
       },
       {
         id: "2",
-        title: "Endurance Series - 6 Hours of Spa",
-        championship: "Endurance Series",
-        date: "2025-05-22",
+        title: "Half Hour Dash",
+        championship: "Half Hour Dash",
+        date: halfHourDate.toISOString(),
         track: "Spa-Francorchamps",
         series: "GT3/GT4",
-        url: "https://www.thesimgrid.com/championships/endurance-series"
+        url: "https://www.thesimgrid.com/championships/14396",
+        type: "halfHour"
       },
       {
         id: "3",
-        title: "Sprint Cup - Brands Hatch",
-        championship: "Sprint Cup",
-        date: "2025-06-01",
-        track: "Brands Hatch",
-        series: "GT3",
-        url: "https://www.thesimgrid.com/championships/sprint-cup"
-      },
-      {
-        id: "4",
-        title: "Special Event - 24h Nürburgring",
-        championship: "Special Events",
-        date: "2025-06-15",
+        title: "Mini Enduro",
+        championship: "Mini Enduro Series",
+        date: miniEnduroDate.toISOString(),
         track: "Nürburgring",
         series: "GT3/GT4",
-        url: "https://www.thesimgrid.com/special-events"
+        url: "https://www.thesimgrid.com/championships/14397",
+        type: "mini"
       },
     ];
 
@@ -77,8 +87,17 @@ const SimGridRaces = () => {
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const getRefreshInterval = (type: 'quick' | 'halfHour' | 'mini') => {
+    switch (type) {
+      case 'quick': return '5 minutes';
+      case 'halfHour': return '20 minutes';
+      case 'mini': return '30 minutes';
+      default: return 'regularly';
+    }
   };
 
   return (
@@ -121,31 +140,36 @@ const SimGridRaces = () => {
                 Loading races...
               </div>
             ) : filteredRaces.length > 0 ? (
-              <table className="w-full border-collapse">
-                <thead className="bg-racing-black sticky top-0">
-                  <tr className="border-b border-racing-grey">
-                    <th className="p-2 text-left text-xs font-formula tracking-wider">EVENT</th>
-                    <th className="p-2 text-left text-xs font-formula tracking-wider">DATE</th>
-                    <th className="p-2 text-left text-xs font-formula tracking-wider">SERIES</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRaces.map((race, index) => (
-                    <tr 
-                      key={race.id} 
-                      className={`border-b border-racing-grey hover:bg-racing-darkgrey cursor-pointer ${index % 2 === 0 ? "bg-racing-black" : "bg-[#1A1A1A]"}`}
-                      onClick={() => window.open(race.url, '_blank')}
-                    >
-                      <td className="p-2 text-sm">
-                        <div className="font-medium">{race.title}</div>
-                        <div className="text-xs text-racing-silver">{race.track}</div>
-                      </td>
-                      <td className="p-2 text-sm">{formatDate(race.date)}</td>
-                      <td className="p-2 text-sm">{race.series}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="space-y-2 p-2">
+                {filteredRaces.map((race) => (
+                  <div 
+                    key={race.id} 
+                    className="bg-racing-darkgrey hover:bg-racing-grey p-3 rounded border border-racing-grey cursor-pointer transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-formula text-racing-red text-sm mb-1">{race.title}</div>
+                        <div className="text-sm font-medium">{race.track}</div>
+                        <div className="text-xs text-racing-silver">{race.series}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{formatDate(race.date)}</div>
+                        <div className="text-xs text-racing-silver">Updates every {getRefreshInterval(race.type)}</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex justify-end">
+                      <Button 
+                        onClick={() => window.open(race.url, '_blank')} 
+                        size="sm" 
+                        variant="outline" 
+                        className="bg-racing-red hover:bg-racing-red/80 text-white border-0"
+                      >
+                        Join Race
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="p-4 text-center text-racing-silver">
                 No upcoming races found.
@@ -161,31 +185,37 @@ const SimGridRaces = () => {
                 Loading races...
               </div>
             ) : filteredRaces.length > 0 ? (
-              <table className="w-full border-collapse">
-                <thead className="bg-racing-black sticky top-0">
-                  <tr className="border-b border-racing-grey">
-                    <th className="p-2 text-left text-xs font-formula tracking-wider">EVENT</th>
-                    <th className="p-2 text-left text-xs font-formula tracking-wider">DATE</th>
-                    <th className="p-2 text-left text-xs font-formula tracking-wider">SERIES</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRaces.map((race, index) => (
-                    <tr 
-                      key={race.id} 
-                      className={`border-b border-racing-grey hover:bg-racing-darkgrey cursor-pointer ${index % 2 === 0 ? "bg-racing-black" : "bg-[#1A1A1A]"}`}
-                      onClick={() => window.open(race.url, '_blank')}
-                    >
-                      <td className="p-2 text-sm">
-                        <div className="font-medium">{race.title}</div>
-                        <div className="text-xs text-racing-silver">{race.track}</div>
-                      </td>
-                      <td className="p-2 text-sm">{formatDate(race.date)}</td>
-                      <td className="p-2 text-sm">{race.series}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="space-y-2 p-2">
+                {filteredRaces.map((race) => (
+                  <div 
+                    key={race.id} 
+                    className="bg-racing-darkgrey hover:bg-racing-grey p-3 rounded border border-racing-grey transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-formula text-racing-red text-sm mb-1">{race.title}</div>
+                        <div className="text-sm font-medium">{race.track}</div>
+                        <div className="text-xs text-racing-silver">{race.series}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{formatDate(race.date)}</div>
+                        <div className="text-xs text-racing-silver">Updated every {getRefreshInterval(race.type)}</div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex justify-between">
+                      <div className="text-xs text-racing-silver">Race completed</div>
+                      <Button 
+                        onClick={() => window.open(race.url, '_blank')} 
+                        size="sm" 
+                        variant="outline" 
+                        className="bg-transparent hover:bg-racing-grey/50 text-racing-silver border border-racing-grey"
+                      >
+                        View Results
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="p-4 text-center text-racing-silver">
                 No recent races found.
