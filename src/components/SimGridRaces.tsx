@@ -18,7 +18,6 @@ interface Race {
 const SimGridRaces = () => {
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("upcoming");
 
   // For demo purposes, populate with mock data representing the different series
   useEffect(() => {
@@ -43,7 +42,7 @@ const SimGridRaces = () => {
         title: "Quick Race",
         championship: "Quick Race Series",
         date: quickRaceDate.toISOString(),
-        track: "Monza",
+        track: "Red Bull Ring",
         series: "GT3",
         url: "https://www.thesimgrid.com/championships/14395",
         type: "quick"
@@ -53,7 +52,7 @@ const SimGridRaces = () => {
         title: "Half Hour Dash",
         championship: "Half Hour Dash",
         date: halfHourDate.toISOString(),
-        track: "Spa-Francorchamps",
+        track: "Mount Panorama",
         series: "GT3/GT4",
         url: "https://www.thesimgrid.com/championships/14396",
         type: "halfHour"
@@ -63,7 +62,7 @@ const SimGridRaces = () => {
         title: "Mini Enduro",
         championship: "Mini Enduro Series",
         date: miniEnduroDate.toISOString(),
-        track: "Nürburgring",
+        track: "Circuit de Barcelona-Catalunya",
         series: "GT3/GT4",
         url: "https://www.thesimgrid.com/championships/14397",
         type: "mini"
@@ -73,18 +72,6 @@ const SimGridRaces = () => {
     setRaces(mockRaces);
     setLoading(false);
   }, []);
-
-  // Filter races based on the selected tab
-  const filteredRaces = races.filter(race => {
-    const eventDate = new Date(race.date);
-    const today = new Date();
-    
-    if (activeTab === "upcoming") {
-      return eventDate >= today;
-    } else {
-      return eventDate < today;
-    }
-  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -105,7 +92,7 @@ const SimGridRaces = () => {
       <div className="bg-racing-darkgrey p-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar size={16} className="text-racing-red" />
-          <h2 className="font-formula text-base">SIMGRID RACES</h2>
+          <h2 className="font-formula text-base">NEXT TEAM'S EVENTS</h2>
         </div>
         <a 
           href="https://www.thesimgrid.com/seasons" 
@@ -117,113 +104,48 @@ const SimGridRaces = () => {
         </a>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full bg-racing-black p-0">
-          <TabsTrigger 
-            value="upcoming" 
-            className="flex-1 rounded-none data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
-          >
-            Upcoming
-          </TabsTrigger>
-          <TabsTrigger 
-            value="recent" 
-            className="flex-1 rounded-none data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
-          >
-            Recent
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="upcoming" className="m-0">
-          <div className="max-h-80 overflow-y-auto">
-            {loading ? (
-              <div className="p-4 text-center text-racing-silver">
-                Loading races...
-              </div>
-            ) : filteredRaces.length > 0 ? (
-              <div className="space-y-2 p-2">
-                {filteredRaces.map((race) => (
-                  <div 
-                    key={race.id} 
-                    className="bg-racing-darkgrey hover:bg-racing-grey p-3 rounded border border-racing-grey cursor-pointer transition-colors"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-formula text-racing-red text-sm mb-1">{race.title}</div>
-                        <div className="text-sm font-medium">{race.track}</div>
-                        <div className="text-xs text-racing-silver">{race.series}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{formatDate(race.date)}</div>
-                        <div className="text-xs text-racing-silver">Updates every {getRefreshInterval(race.type)}</div>
-                      </div>
-                    </div>
-                    <div className="mt-2 flex justify-end">
-                      <Button 
-                        onClick={() => window.open(race.url, '_blank')} 
-                        size="sm" 
-                        variant="outline" 
-                        className="bg-racing-red hover:bg-racing-red/80 text-white border-0"
-                      >
-                        Join Race
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 text-center text-racing-silver">
-                No upcoming races found.
-              </div>
-            )}
+      <div className="max-h-80 overflow-y-auto">
+        {loading ? (
+          <div className="p-4 text-center text-racing-silver">
+            Loading races...
           </div>
-        </TabsContent>
-        
-        <TabsContent value="recent" className="m-0">
-          <div className="max-h-80 overflow-y-auto">
-            {loading ? (
-              <div className="p-4 text-center text-racing-silver">
-                Loading races...
-              </div>
-            ) : filteredRaces.length > 0 ? (
-              <div className="space-y-2 p-2">
-                {filteredRaces.map((race) => (
-                  <div 
-                    key={race.id} 
-                    className="bg-racing-darkgrey hover:bg-racing-grey p-3 rounded border border-racing-grey transition-colors"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-formula text-racing-red text-sm mb-1">{race.title}</div>
-                        <div className="text-sm font-medium">{race.track}</div>
-                        <div className="text-xs text-racing-silver">{race.series}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{formatDate(race.date)}</div>
-                        <div className="text-xs text-racing-silver">Updated every {getRefreshInterval(race.type)}</div>
-                      </div>
-                    </div>
-                    <div className="mt-2 flex justify-between">
-                      <div className="text-xs text-racing-silver">Race completed</div>
-                      <Button 
-                        onClick={() => window.open(race.url, '_blank')} 
-                        size="sm" 
-                        variant="outline" 
-                        className="bg-transparent hover:bg-racing-grey/50 text-racing-silver border border-racing-grey"
-                      >
-                        View Results
-                      </Button>
-                    </div>
+        ) : races.length > 0 ? (
+          <div className="space-y-2 p-2">
+            {races.map((race) => (
+              <div 
+                key={race.id} 
+                className="bg-racing-darkgrey hover:bg-racing-grey p-3 rounded border border-racing-grey cursor-pointer transition-colors"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-formula text-racing-red text-sm mb-1">{race.title}</div>
+                    <div className="text-sm font-medium">{race.track}</div>
+                    <div className="text-xs text-racing-silver">{race.series}</div>
                   </div>
-                ))}
+                  <div className="text-right">
+                    <div className="text-sm font-medium">{formatDate(race.date)}</div>
+                    <div className="text-xs text-racing-silver">Updates every {getRefreshInterval(race.type)}</div>
+                  </div>
+                </div>
+                <div className="mt-2 flex justify-end">
+                  <Button 
+                    onClick={() => window.open(race.url, '_blank')} 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-racing-red hover:bg-racing-red/80 text-white border-0"
+                  >
+                    Join Race
+                  </Button>
+                </div>
               </div>
-            ) : (
-              <div className="p-4 text-center text-racing-silver">
-                No recent races found.
-              </div>
-            )}
+            ))}
           </div>
-        </TabsContent>
-      </Tabs>
+        ) : (
+          <div className="p-4 text-center text-racing-silver">
+            No upcoming races found.
+          </div>
+        )}
+      </div>
     </div>
   );
 };
