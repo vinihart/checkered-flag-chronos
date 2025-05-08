@@ -1,18 +1,26 @@
 
-import React, { useState } from "react";
-import { LapTime, detectAnomalies } from "@/types/racing";
+import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { X, AlertTriangle, Shield } from "lucide-react";
-import LeaderboardTable from "./LeaderboardTable";
+import { LapTime } from "@/types/racing";
+import { PlusCircle, Trash2, AlertTriangle, Clock, CheckCircle, Users } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-interface AdminPanelProps {
+export interface AdminPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   lapTimes: LapTime[];
   onEditLapTime: (lapTime: LapTime) => void;
   onDeleteLapTime: (id: string) => void;
   onRunAnomalyDetection: () => void;
+  onClearReviewFlag?: (lapTimeId: string) => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -22,131 +30,123 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onEditLapTime,
   onDeleteLapTime,
   onRunAnomalyDetection,
+  onClearReviewFlag,
 }) => {
-  const [showingId, setShowingId] = useState<string | null>(null);
-  
-  // Filter flagged lap times for anomaly section
-  const flaggedLapTimes = lapTimes.filter(lap => lap.isFlagged);
-  
-  const handleConfirmDelete = () => {
-    if (showingId) {
-      onDeleteLapTime(showingId);
-      setShowingId(null);
-    }
-  };
+  // Filter lap times that are under review or flagged
+  const flaggedLapTimes = lapTimes.filter(lap => lap.underReview || lap.isFlagged);
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-racing-darkgrey text-white border-racing-grey max-w-4xl max-h-[90vh] overflow-auto">
+      <DialogContent className="bg-racing-darkgrey text-white border-racing-grey max-w-4xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="font-formula text-xl flex items-center gap-2">
-              <Shield size={18} />
-              Admin Panel
-            </DialogTitle>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => onOpenChange(false)}
-              className="text-racing-silver hover:text-white"
-            >
-              <X size={18} />
-            </Button>
-          </div>
+          <DialogTitle className="font-formula text-xl flex items-center gap-2">
+            <Users size={18} />
+            Admin Panel
+          </DialogTitle>
           <DialogDescription className="text-racing-silver">
-            Manage lap times and run anomaly detection
+            Manage lap times and perform administrative tasks
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-formula font-bold">All Lap Times</h3>
+            <h3 className="font-formula text-lg mb-2 flex items-center gap-2">
+              <AlertTriangle size={16} className="text-yellow-500" />
+              Lap Times Under Review
+            </h3>
+            
+            {flaggedLapTimes.length === 0 ? (
+              <p className="text-racing-silver italic">No lap times currently under review or flagged.</p>
+            ) : (
+              <div className="border border-racing-grey rounded-md overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-racing-black">
+                    <TableRow>
+                      <TableHead className="text-white">Driver</TableHead>
+                      <TableHead className="text-white">Track</TableHead>
+                      <TableHead className="text-white">Time</TableHead>
+                      <TableHead className="text-white">Date</TableHead>
+                      <TableHead className="text-white text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody className="bg-racing-black">
+                    {flaggedLapTimes.map((lapTime) => (
+                      <TableRow key={lapTime.id} className="hover:bg-racing-darkgrey/50">
+                        <TableCell className="font-medium text-white">
+                          {lapTime.driverName}
+                          {lapTime.underReview && 
+                            <span className="ml-2 h-2 w-2 bg-yellow-500 rounded-full inline-block"></span>
+                          }
+                          {lapTime.isFlagged && 
+                            <AlertTriangle size={14} className="text-yellow-500 ml-1 inline" />
+                          }
+                        </TableCell>
+                        <TableCell className="text-racing-silver">{
+                          lapTimes.find(t => t.trackId === lapTime.trackId)?.trackId || lapTime.trackId
+                        }</TableCell>
+                        <TableCell className="text-racing-silver font-mono">{lapTime.lapTime}</TableCell>
+                        <TableCell className="text-racing-silver">{lapTime.date}</TableCell>
+                        <TableCell className="text-right space-x-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="bg-transparent text-white border-racing-grey hover:bg-racing-grey hover:text-white"
+                            onClick={() => onEditLapTime(lapTime)}
+                          >
+                            <Clock size={14} className="mr-1" />
+                            Edit
+                          </Button>
+                          {lapTime.underReview && onClearReviewFlag && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              className="bg-transparent text-green-500 border-green-800 hover:bg-green-900 hover:text-green-400"
+                              onClick={() => onClearReviewFlag(lapTime.id)}
+                            >
+                              <CheckCircle size={14} className="mr-1" />
+                              Approve
+                            </Button>
+                          )}
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="bg-transparent text-racing-red border-racing-red/30 hover:bg-racing-red/20 hover:text-red-400"
+                            onClick={() => onDeleteLapTime(lapTime.id)}
+                          >
+                            <Trash2 size={14} className="mr-1" />
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex flex-col md:flex-row gap-2 justify-between">
+            <div className="flex gap-2">
               <Button 
-                variant="outline" 
-                size="sm"
-                onClick={onRunAnomalyDetection}
-                className="bg-racing-black border-racing-grey text-racing-silver hover:text-white flex items-center gap-1"
+                onClick={onRunAnomalyDetection} 
+                className="bg-yellow-600 hover:bg-yellow-700 text-white"
               >
-                <AlertTriangle size={14} />
+                <AlertTriangle size={16} className="mr-1" />
                 Run Anomaly Detection
               </Button>
             </div>
-            <LeaderboardTable 
-              lapTimes={lapTimes} 
-              onEditLapTime={onEditLapTime}
-            />
-          </div>
-          
-          {flaggedLapTimes.length > 0 && (
-            <div>
-              <h3 className="text-lg font-formula font-bold flex items-center gap-2 text-yellow-500 mb-2">
-                <AlertTriangle size={18} />
-                Flagged Lap Times
-              </h3>
-              <p className="text-sm text-racing-silver mb-2">
-                The following lap times have been flagged as potential anomalies.
-              </p>
-              <LeaderboardTable 
-                lapTimes={flaggedLapTimes} 
-                onEditLapTime={onEditLapTime}
-              />
-            </div>
-          )}
-        </div>
-        
-        <DialogFooter className="flex justify-between gap-2 pt-4">
-          <div>
+            
             <Button 
               variant="destructive" 
-              size="sm"
-              onClick={() => setShowingId("delete-all")}
-              className="bg-racing-red hover:bg-red-700"
+              onClick={() => onDeleteLapTime("delete-all")} 
+              className="bg-racing-red hover:bg-red-900"
             >
-              Delete All Lap Times
+              <Trash2 size={16} className="mr-1" />
+              Clear All Lap Times
             </Button>
           </div>
-          <Button 
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            className="bg-racing-darkgrey border-racing-grey text-white hover:bg-racing-black"
-          >
-            Close
-          </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
-      
-      {/* Confirmation Dialog */}
-      {showingId && (
-        <Dialog open={!!showingId} onOpenChange={(open) => !open && setShowingId(null)}>
-          <DialogContent className="bg-racing-darkgrey text-white border-racing-grey">
-            <DialogHeader>
-              <DialogTitle className="font-formula text-xl">Confirm Deletion</DialogTitle>
-              <DialogDescription className="text-racing-silver">
-                {showingId === "delete-all" 
-                  ? "Are you sure you want to delete all lap times? This action cannot be undone."
-                  : "Are you sure you want to delete this lap time? This action cannot be undone."}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowingId(null)}
-                className="border-racing-grey text-racing-silver hover:text-white"
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleConfirmDelete}
-                className="bg-racing-red hover:bg-red-700"
-              >
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
     </Dialog>
   );
 };

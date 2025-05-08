@@ -55,10 +55,10 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
   };
 
   const validateLapTime = (time: string): boolean => {
-    // Validate format (M:SS.mmm or MM:SS.mmm)
-    const regex = /^([0-9]{1,2}):([0-5][0-9])\.([0-9]{1,3})$/;
+    // Validate format (M:SS:mmm or MM:SS:mmm)
+    const regex = /^([0-9]{1,2}):([0-5][0-9]):([0-9]{1,3})$/;
     if (!regex.test(time)) {
-      setLapTimeError("Invalid format. Use M:SS.mmm");
+      setLapTimeError("Invalid format. Use M:SS:mmm");
       return false;
     }
     
@@ -213,11 +213,11 @@ const LapTimeForm: React.FC<LapTimeFormProps> = ({
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-racing-silver">Lap Time* (Format: M:SS.mmm)</label>
+              <label className="text-sm font-medium text-racing-silver">Lap Time* (Format: M:SS:mmm)</label>
               <Input 
                 value={lapTime}
                 onChange={(e) => setLapTime(e.target.value)}
-                placeholder="1:23.456"
+                placeholder="1:23:456"
                 required
                 className={`bg-racing-black border-racing-grey text-white ${lapTimeError ? "border-status-slower" : ""}`}
                 readOnly={!isAdmin && !!editingLapTime}

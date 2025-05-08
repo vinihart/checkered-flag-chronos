@@ -13,12 +13,14 @@ interface LeaderboardTableProps {
   lapTimes: LapTime[];
   onEditLapTime?: (lapTime: LapTime) => void;
   onReportLapTime?: (lapTime: LapTime) => void;
+  showOnlyMyTimes?: boolean;
 }
 
 const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   lapTimes,
   onEditLapTime,
   onReportLapTime,
+  showOnlyMyTimes = false,
 }) => {
   // Helper function to get team by ID
   const getTeam = (teamId: string | undefined): Team | undefined => {
@@ -73,6 +75,12 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     );
   };
 
+  // Filter to show only current user's times if needed
+  const filteredTimes = showOnlyMyTimes ? lapTimes.filter(lapTime => {
+    const pilotInfo = JSON.parse(localStorage.getItem("pilotRegistration") || "{}");
+    return pilotInfo.pilot === lapTime.driverName;
+  }) : lapTimes;
+
   return (
     <div className="bg-racing-black text-white w-full overflow-hidden rounded-sm">
       <table className="w-full border-collapse">
@@ -90,20 +98,20 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {lapTimes.length === 0 ? (
+          {filteredTimes.length === 0 ? (
             <tr>
               <td colSpan={9} className="py-4 text-center text-racing-silver">
                 No lap times recorded yet. Be the first to submit your time!
               </td>
             </tr>
           ) : (
-            lapTimes.map((lapTime, index) => {
+            filteredTimes.map((lapTime, index) => {
               const team = getTeam(lapTime.teamId);
               const car = getCar(lapTime.carId);
               const track = getTrack(lapTime.trackId);
               
               // Calculate gap to leader
-              const leaderTime = lapTimes[0].lapTimeMs;
+              const leaderTime = filteredTimes[0].lapTimeMs;
               const timeDiff = lapTime.lapTimeMs - leaderTime;
               const formattedDiff = index === 0 
                 ? "-" 
@@ -130,7 +138,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                       
                       {/* Anomaly detection flag */}
                       {lapTime.isFlagged && (
-                        <AlertTriangle size={14} className="text-yellow-500 ml-1" title="Flagged as anomaly" />
+                        <AlertTriangle size={14} className="text-yellow-500 ml-1" aria-label="Flagged as anomaly" />
                       )}
                     </div>
                   </td>

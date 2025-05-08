@@ -1,3 +1,4 @@
+
 // Types for our racing leaderboard application
 
 export interface LapTime {
@@ -7,7 +8,7 @@ export interface LapTime {
   trackId: string;
   carId: string;
   teamId?: string; // Optional team name (now manually entered)
-  lapTime: string; // Format: "1:23.456"
+  lapTime: string; // Format: "1:23.456" now changed to "1:23:456"
   lapTimeMs: number; // For sorting and calculations
   date: string;
   status?: "improved" | "slower" | "best" | "neutral";
@@ -37,32 +38,52 @@ export interface Team {
   name: string;
   icon?: string;
   color: string;
+  logo?: string; // URL to team logo
+  members?: string[]; // Array of driver IDs
+}
+
+export interface RacingEvent {
+  id: string;
+  title: string;
+  description: string;
+  trackId: string;
+  startDate: string;
+  endDate: string;
+  createdBy: string; // User ID of team leader who created the event
+  teamId?: string; // Optional: if it's team-specific
+  isPublic: boolean; // Whether this event is visible to all users
+  winners?: {
+    driverName: string;
+    lapTime: string;
+    position: number;
+  }[];
+  isArchived: boolean;
 }
 
 // Updated tracks list from Assetto Corsa Competizione with record times
 export const MOCK_TRACKS: Track[] = [
-  { id: "monza", name: "Monza", country: "Italy", icon: "🇮🇹", recordTime: "1:47.501", recordTimeMs: 107501 },
-  { id: "zolder", name: "Zolder", country: "Belgium", icon: "🇧🇪", recordTime: "1:28.182", recordTimeMs: 88182 },
-  { id: "brands_hatch", name: "Brands Hatch", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:23.598", recordTimeMs: 83598 },
-  { id: "silverstone", name: "Silverstone", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:57.274", recordTimeMs: 117274 },
-  { id: "paul_ricard", name: "Paul Ricard", country: "France", icon: "🇫🇷", recordTime: "1:53.028", recordTimeMs: 113028 },
-  { id: "misano", name: "Misano", country: "Italy", icon: "🇮🇹", recordTime: "1:33.550", recordTimeMs: 93550 },
-  { id: "spa", name: "Spa-Francorchamps", country: "Belgium", icon: "🇧🇪", recordTime: "2:17.470", recordTimeMs: 137470 },
-  { id: "nurburgring", name: "Nürburgring", country: "Germany", icon: "🇩🇪", recordTime: "1:54.125", recordTimeMs: 114125 },
-  { id: "barcelona", name: "Barcelona", country: "Spain", icon: "🇪🇸", recordTime: "1:43.202", recordTimeMs: 103202 },
-  { id: "hungaroring", name: "Hungaroring", country: "Hungary", icon: "🇭🇺", recordTime: "1:43.389", recordTimeMs: 103389 },
-  { id: "zandvoort", name: "Zandvoort", country: "Netherlands", icon: "🇳🇱", recordTime: "1:35.792", recordTimeMs: 95792 },
-  { id: "imola", name: "Imola", country: "Italy", icon: "🇮🇹", recordTime: "1:41.756", recordTimeMs: 101756 },
-  { id: "suzuka", name: "Suzuka", country: "Japan", icon: "🇯🇵", recordTime: "2:00.124", recordTimeMs: 120124 },
-  { id: "kyalami", name: "Kyalami", country: "South Africa", icon: "🇿🇦", recordTime: "1:40.894", recordTimeMs: 100894 },
-  { id: "mount_panorama", name: "Mount Panorama", country: "Australia", icon: "🇦🇺", recordTime: "2:01.286", recordTimeMs: 121286 },
-  { id: "laguna_seca", name: "Laguna Seca", country: "United States", icon: "🇺🇸", recordTime: "1:22.701", recordTimeMs: 82701 },
-  { id: "oulton_park", name: "Oulton Park", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:32.579", recordTimeMs: 92579 },
-  { id: "donington", name: "Donington", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:26.731", recordTimeMs: 86731 },
-  { id: "snetterton", name: "Snetterton", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:46.118", recordTimeMs: 106118 },
-  { id: "cota", name: "Circuit of the Americas", country: "United States", icon: "🇺🇸", recordTime: "2:04.893", recordTimeMs: 124893 },
-  { id: "indianapolis", name: "Indianapolis", country: "United States", icon: "🇺🇸", recordTime: "1:33.027", recordTimeMs: 93027 },
-  { id: "watkins_glen", name: "Watkins Glen", country: "United States", icon: "🇺🇸", recordTime: "1:44.352", recordTimeMs: 104352 },
+  { id: "monza", name: "Monza", country: "Italy", icon: "🇮🇹", recordTime: "1:47:501", recordTimeMs: 107501 },
+  { id: "zolder", name: "Zolder", country: "Belgium", icon: "🇧🇪", recordTime: "1:28:182", recordTimeMs: 88182 },
+  { id: "brands_hatch", name: "Brands Hatch", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:23:598", recordTimeMs: 83598 },
+  { id: "silverstone", name: "Silverstone", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:57:274", recordTimeMs: 117274 },
+  { id: "paul_ricard", name: "Paul Ricard", country: "France", icon: "🇫🇷", recordTime: "1:53:028", recordTimeMs: 113028 },
+  { id: "misano", name: "Misano", country: "Italy", icon: "🇮🇹", recordTime: "1:33:550", recordTimeMs: 93550 },
+  { id: "spa", name: "Spa-Francorchamps", country: "Belgium", icon: "🇧🇪", recordTime: "2:17:470", recordTimeMs: 137470 },
+  { id: "nurburgring", name: "Nürburgring", country: "Germany", icon: "🇩🇪", recordTime: "1:54:125", recordTimeMs: 114125 },
+  { id: "barcelona", name: "Barcelona", country: "Spain", icon: "🇪🇸", recordTime: "1:43:202", recordTimeMs: 103202 },
+  { id: "hungaroring", name: "Hungaroring", country: "Hungary", icon: "🇭🇺", recordTime: "1:43:389", recordTimeMs: 103389 },
+  { id: "zandvoort", name: "Zandvoort", country: "Netherlands", icon: "🇳🇱", recordTime: "1:35:792", recordTimeMs: 95792 },
+  { id: "imola", name: "Imola", country: "Italy", icon: "🇮🇹", recordTime: "1:41:756", recordTimeMs: 101756 },
+  { id: "suzuka", name: "Suzuka", country: "Japan", icon: "🇯🇵", recordTime: "2:00:124", recordTimeMs: 120124 },
+  { id: "kyalami", name: "Kyalami", country: "South Africa", icon: "🇿🇦", recordTime: "1:40:894", recordTimeMs: 100894 },
+  { id: "mount_panorama", name: "Mount Panorama", country: "Australia", icon: "🇦🇺", recordTime: "2:01:286", recordTimeMs: 121286 },
+  { id: "laguna_seca", name: "Laguna Seca", country: "United States", icon: "🇺🇸", recordTime: "1:22:701", recordTimeMs: 82701 },
+  { id: "oulton_park", name: "Oulton Park", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:32:579", recordTimeMs: 92579 },
+  { id: "donington", name: "Donington", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:26:731", recordTimeMs: 86731 },
+  { id: "snetterton", name: "Snetterton", country: "United Kingdom", icon: "🇬🇧", recordTime: "1:46:118", recordTimeMs: 106118 },
+  { id: "cota", name: "Circuit of the Americas", country: "United States", icon: "🇺🇸", recordTime: "2:04:893", recordTimeMs: 124893 },
+  { id: "indianapolis", name: "Indianapolis", country: "United States", icon: "🇺🇸", recordTime: "1:33:027", recordTimeMs: 93027 },
+  { id: "watkins_glen", name: "Watkins Glen", country: "United States", icon: "🇺🇸", recordTime: "1:44:352", recordTimeMs: 104352 },
 ];
 
 // Updated cars list from Assetto Corsa Competizione
@@ -110,22 +131,24 @@ export const MOCK_TEAMS: Team[] = [
 // Emptying the mock data per user request
 export const MOCK_LAP_TIMES: LapTime[] = [];
 
-// Utility function to format lap time from milliseconds to MM:SS.mmm
+// Sample events
+export const MOCK_EVENTS: RacingEvent[] = [];
+
+// Utility function to format lap time from milliseconds to MM:SS:mmm
 export const formatLapTime = (timeMs: number): string => {
   const minutes = Math.floor(timeMs / 60000);
   const seconds = Math.floor((timeMs % 60000) / 1000);
   const milliseconds = timeMs % 1000;
   
-  return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}:${milliseconds.toString().padStart(3, '0')}`;
 };
 
-// Utility function to convert lap time string (MM:SS.mmm) to milliseconds
+// Utility function to convert lap time string (MM:SS:mmm) to milliseconds
 export const lapTimeToMs = (lapTime: string): number => {
-  const [minutesPart, secondsPart] = lapTime.split(':');
-  const [seconds, milliseconds] = secondsPart.split('.');
+  const [minutesPart, secondsPart, milliseconds] = lapTime.split(':');
   
   const minutes = parseInt(minutesPart, 10);
-  const secs = parseInt(seconds, 10);
+  const secs = parseInt(secondsPart, 10);
   const ms = parseInt(milliseconds, 10);
   
   return (minutes * 60 * 1000) + (secs * 1000) + ms;

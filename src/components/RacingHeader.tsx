@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Track } from "@/types/racing";
-import { Clock, Flag, Users, Trophy, User, LogOut } from "lucide-react";
+import { Clock, Flag, Trophy, User, LogOut } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,6 +19,7 @@ interface RacingHeaderProps {
   onShowSubmitForm: () => void;
   onShowAdminPanel: () => void;
   className?: string;
+  isAdmin: boolean;
 }
 
 type PilotInfo = {
@@ -36,6 +37,7 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
   onShowSubmitForm,
   onShowAdminPanel,
   className,
+  isAdmin
 }) => {
   const [pilotInfo, setPilotInfo] = useState<PilotInfo | null>(null);
   const navigate = useNavigate();
@@ -45,7 +47,7 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
     // Check if user is logged in
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     if (!isLoggedIn) {
-      navigate("/");
+      navigate("/login");
       return;
     }
     
@@ -91,13 +93,17 @@ const RacingHeader: React.FC<RacingHeaderProps> = ({
             <Clock size={16} />
             <span className="hidden md:inline">Submit Time</span>
           </button>
-          <button
-            onClick={onShowAdminPanel}
-            className="bg-racing-darkgrey hover:bg-racing-black transition-colors py-1 px-3 rounded flex items-center gap-1"
-          >
-            <Users size={16} />
-            <span className="hidden md:inline">Admin</span>
-          </button>
+          
+          {isAdmin && (
+            <button
+              onClick={onShowAdminPanel}
+              className="bg-racing-darkgrey hover:bg-racing-black transition-colors py-1 px-3 rounded flex items-center gap-1"
+            >
+              <Flag size={16} />
+              <span className="hidden md:inline">Admin</span>
+            </button>
+          )}
+          
           <button
             onClick={handleLogout}
             className="bg-racing-darkgrey hover:bg-racing-black transition-colors py-1 px-3 rounded flex items-center gap-1"

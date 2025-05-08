@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LapTime, Track, MOCK_LAP_TIMES, MOCK_TRACKS, detectAnomalies, reportLapTime, clearReviewFlag } from "@/types/racing";
+import { LapTime, Track, MOCK_LAP_TIMES, MOCK_TRACKS, MOCK_EVENTS, detectAnomalies, reportLapTime, clearReviewFlag } from "@/types/racing";
 import RacingHeader from "@/components/RacingHeader";
 import LeaderboardTable from "@/components/LeaderboardTable";
 import LapTimeForm from "@/components/LapTimeForm";
 import AdminPanel from "@/components/AdminPanel";
 import { useToast } from "@/hooks/use-toast";
+import TeamArea from "@/components/TeamArea";
+import EventsPanel from "@/components/EventsPanel";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const Index = () => {
   // State for lap times
@@ -20,29 +23,35 @@ const Index = () => {
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
   const [editingLapTime, setEditingLapTime] = useState<LapTime | null>(null);
   
+  // Admin status
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Current tab
+  const [activeTab, setActiveTab] = useState("general");
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Check if user is logged in
+  // Check if user is logged in and admin
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     if (!isLoggedIn) {
       navigate("/login");
+      return;
     }
-  }, [navigate]);
-  
-  // Load initial data
-  useEffect(() => {
-    // In a real app, we would fetch lap times from a database
-    // For this demo, we'll use the MOCK_LAP_TIMES which is now empty as requested
-    setLapTimes(MOCK_LAP_TIMES);
+    
+    // For demo purposes, checking if admin (in production, this would be server-side)
+    const username = localStorage.getItem("username");
+    setIsAdmin(username === "admin");
     
     // Load stored lap times from localStorage if available
     const storedLapTimes = localStorage.getItem("lapTimes");
     if (storedLapTimes) {
       setLapTimes(JSON.parse(storedLapTimes));
+    } else {
+      setLapTimes(MOCK_LAP_TIMES);
     }
-  }, []);
+  }, [navigate]);
   
   // Save lap times to localStorage whenever they change
   useEffect(() => {
@@ -109,8 +118,8 @@ const Index = () => {
     if (storedPilotInfo) {
       const pilotInfo = JSON.parse(storedPilotInfo);
       
-      // Only allow editing own lap times
-      if (pilotInfo.pilot === lapTime.driverName) {
+      // Only allow editing own lap times or if admin
+      if (pilotInfo.pilot === lapTime.driverName || isAdmin) {
         setEditingLapTime(lapTime);
         setSubmitFormOpen(true);
       } else {
@@ -174,40 +183,115 @@ const Index = () => {
           setSubmitFormOpen(true);
         }}
         onShowAdminPanel={() => setAdminPanelOpen(true)}
+        isAdmin={isAdmin}
       />
       
       {/* Main content */}
       <div className="flex-1 p-4 flex flex-col items-center">
         <div className="w-full max-w-6xl">
-          <div className="bg-racing-red p-2 flex justify-between items-center mb-1">
-            <h2 className="text-white font-formula text-lg tracking-wider">LEADERBOARD</h2>
-            <div className="text-white text-sm">
-              {filteredLapTimes.length} {filteredLapTimes.length === 1 ? "Entry" : "Entries"}
-            </div>
-          </div>
-          
-          {/* Track Information */}
-          {activeTrack && (
-            <div className="bg-racing-darkgrey p-2 mb-1 flex items-center justify-between">
-              <span className="text-white font-formula">
-                <span className="text-racing-silver mr-2">TRACK:</span> 
-                {activeTrack.icon} {activeTrack.name}, {activeTrack.country}
-              </span>
+          {/* Tabs for General Ranking and My Times */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full bg-racing-darkgrey mb-2">
+              <TabsTrigger 
+                value="general" 
+                className="flex-1 data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
+              >
+                General Ranking
+              </TabsTrigger>
+              <TabsTrigger 
+                value="mytimes" 
+                className="flex-1 data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
+              >
+                My Times
+              </TabsTrigger>
+              <TabsTrigger 
+                value="team" 
+                className="flex-1 data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
+              >
+                Team Area
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="general" className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2">
+                  <div className="bg-racing-red p-2 flex justify-between items-center mb-1">
+                    <h2 className="text-white font-formula text-lg tracking-wider">LEADERBOARD</h2>
+                    <div className="text-white text-sm">
+                      {filteredLapTimes.length} {filteredLapTimes.length === 1 ? "Entry" : "Entries"}
+                    </div>
+                  </div>
+                  
+                  {/* Track Information */}
+                  {activeTrack && (
+                    <div className="bg-racing-darkgrey p-2 mb-1 flex items-center justify-between">
+                      <span className="text-white font-formula">
+                        <span className="text-racing-silver mr-2">TRACK:</span> 
+                        {activeTrack.icon} {activeTrack.name}, {activeTrack.country}
+                      </span>
+                      
+                      {activeTrack.recordTime && (
+                        <span className="text-white font-formula text-sm">
+                          <span className="text-racing-silver">GT3 Record:</span> {activeTrack.recordTime}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Leaderboard Table */}
+                  <LeaderboardTable 
+                    lapTimes={filteredLapTimes} 
+                    onEditLapTime={handleEditLapTime} 
+                    onReportLapTime={handleReportLapTime}
+                    showOnlyMyTimes={false}
+                  />
+                </div>
+                
+                {/* Events Panel */}
+                <div className="lg:col-span-1">
+                  <EventsPanel 
+                    events={MOCK_EVENTS} 
+                    isAdmin={isAdmin} 
+                    onEventUpdated={() => {}} 
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="mytimes" className="mt-0">
+              <div className="bg-racing-red p-2 flex justify-between items-center mb-1">
+                <h2 className="text-white font-formula text-lg tracking-wider">MY LAP TIMES</h2>
+              </div>
               
-              {activeTrack.recordTime && (
-                <span className="text-white font-formula text-sm">
-                  <span className="text-racing-silver">GT3 Record:</span> {activeTrack.recordTime}
-                </span>
+              {/* Track Information */}
+              {activeTrack && (
+                <div className="bg-racing-darkgrey p-2 mb-1 flex items-center justify-between">
+                  <span className="text-white font-formula">
+                    <span className="text-racing-silver mr-2">TRACK:</span> 
+                    {activeTrack.icon} {activeTrack.name}, {activeTrack.country}
+                  </span>
+                  
+                  {activeTrack.recordTime && (
+                    <span className="text-white font-formula text-sm">
+                      <span className="text-racing-silver">GT3 Record:</span> {activeTrack.recordTime}
+                    </span>
+                  )}
+                </div>
               )}
-            </div>
-          )}
-          
-          {/* Leaderboard Table */}
-          <LeaderboardTable 
-            lapTimes={filteredLapTimes} 
-            onEditLapTime={handleEditLapTime} 
-            onReportLapTime={handleReportLapTime}
-          />
+              
+              {/* My Lap Times */}
+              <LeaderboardTable 
+                lapTimes={filteredLapTimes} 
+                onEditLapTime={handleEditLapTime} 
+                onReportLapTime={handleReportLapTime}
+                showOnlyMyTimes={true}
+              />
+            </TabsContent>
+            
+            <TabsContent value="team" className="mt-0">
+              <TeamArea lapTimes={lapTimes} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
       
@@ -217,10 +301,10 @@ const Index = () => {
         onOpenChange={setSubmitFormOpen}
         onSubmit={handleSubmitLapTime}
         editingLapTime={editingLapTime}
-        isAdmin={true} // For simplicity, everyone is admin in this demo
+        isAdmin={isAdmin}
       />
       
-      {/* Admin Panel - enhanced with review functionality */}
+      {/* Admin Panel with review functionality */}
       <AdminPanel
         open={adminPanelOpen}
         onOpenChange={setAdminPanelOpen}
