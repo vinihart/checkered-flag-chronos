@@ -14,6 +14,7 @@ interface LeaderboardTableProps {
   onEditLapTime?: (lapTime: LapTime) => void;
   onReportLapTime?: (lapTime: LapTime) => void;
   showOnlyMyTimes?: boolean;
+  activeTrack?: Track | null;
 }
 
 const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
@@ -21,6 +22,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   onEditLapTime,
   onReportLapTime,
   showOnlyMyTimes = false,
+  activeTrack = null,
 }) => {
   // Helper function to get team by ID
   const getTeam = (teamId: string | undefined): Team | undefined => {
@@ -91,7 +93,9 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">CAR</th>
             <th className="py-2 px-3 text-left text-xs font-formula tracking-wider w-24 hidden sm:table-cell">TEAM</th>
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-24">LAP TIME</th>
-            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-20 hidden sm:table-cell">TRACK</th>
+            {!activeTrack && (
+              <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-20 hidden sm:table-cell">TRACK</th>
+            )}
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">DIFF</th>
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">+/-</th>
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">ACTION</th>
@@ -100,7 +104,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         <tbody>
           {filteredTimes.length === 0 ? (
             <tr>
-              <td colSpan={9} className="py-4 text-center text-racing-silver">
+              <td colSpan={activeTrack ? 8 : 9} className="py-4 text-center text-racing-silver">
                 No lap times recorded yet. Be the first to submit your time!
               </td>
             </tr>
@@ -154,9 +158,11 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                   <td className={`py-1.5 px-3 text-center font-formula font-bold ${getStatusColor(lapTime.status)}`}>
                     {lapTime.lapTime}
                   </td>
-                  <td className="py-1.5 px-3 text-center text-racing-silver text-sm hidden sm:table-cell">
-                    {track?.name || "-"}
-                  </td>
+                  {!activeTrack && (
+                    <td className="py-1.5 px-3 text-center text-racing-silver text-sm hidden sm:table-cell">
+                      {track?.name || "-"}
+                    </td>
+                  )}
                   <td className="py-1.5 px-3 text-center font-formula text-sm">
                     {formattedDiff}
                   </td>

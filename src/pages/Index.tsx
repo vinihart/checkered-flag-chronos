@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import TeamArea from "@/components/TeamArea";
 import EventsPanel from "@/components/EventsPanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import SimGridRaces from "@/components/SimGridRaces";
 
 const Index = () => {
   // State for lap times
@@ -189,6 +190,11 @@ const Index = () => {
       {/* Main content */}
       <div className="flex-1 p-4 flex flex-col items-center">
         <div className="w-full max-w-6xl">
+          {/* SimGrid Races Quick View */}
+          <div className="mb-4">
+            <SimGridRaces />
+          </div>
+          
           {/* Tabs for General Ranking and My Times */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full bg-racing-darkgrey mb-2">
@@ -244,6 +250,7 @@ const Index = () => {
                     onEditLapTime={handleEditLapTime} 
                     onReportLapTime={handleReportLapTime}
                     showOnlyMyTimes={false}
+                    activeTrack={activeTrack}
                   />
                 </div>
                 
@@ -285,6 +292,7 @@ const Index = () => {
                 onEditLapTime={handleEditLapTime} 
                 onReportLapTime={handleReportLapTime}
                 showOnlyMyTimes={true}
+                activeTrack={activeTrack}
               />
             </TabsContent>
             
