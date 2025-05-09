@@ -36,9 +36,10 @@ interface EventsPanelProps {
   events: RacingEvent[];
   isAdmin: boolean;
   onEventUpdated: (events: RacingEvent[]) => void;
+  title?: string; // Add the title prop as optional
 }
 
-const EventsPanel: React.FC<EventsPanelProps> = ({ events: initialEvents, isAdmin, onEventUpdated }) => {
+const EventsPanel: React.FC<EventsPanelProps> = ({ events: initialEvents, isAdmin, onEventUpdated, title = "UPCOMING EVENTS" }) => {
   const [events, setEvents] = useState<RacingEvent[]>(initialEvents);
   const [showEventForm, setShowEventForm] = useState(false);
   const [eventFormData, setEventFormData] = useState<Partial<RacingEvent>>({
@@ -198,7 +199,7 @@ const EventsPanel: React.FC<EventsPanelProps> = ({ events: initialEvents, isAdmi
       <div className="bg-racing-red p-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar size={18} className="text-white" />
-          <h3 className="font-formula text-white text-lg">UPCOMING EVENTS</h3>
+          <h3 className="font-formula text-white text-lg">{title}</h3>
         </div>
         
         {isAdmin && (
