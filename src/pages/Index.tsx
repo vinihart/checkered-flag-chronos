@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LapTime, Track, MOCK_LAP_TIMES, MOCK_TRACKS, MOCK_EVENTS, detectAnomalies, reportLapTime, clearReviewFlag } from "@/types/racing";
@@ -259,7 +258,8 @@ const Index = () => {
                   <EventsPanel 
                     events={MOCK_EVENTS} 
                     isAdmin={isAdmin} 
-                    onEventUpdated={() => {}} 
+                    onEventUpdated={() => {}}
+                    title="NEXT TEAM'S EVENTS"
                   />
                 </div>
               </div>

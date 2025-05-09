@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Upload, BadgeCheck, Trophy, MessageSquare } from "lucide-react";
+import { Calendar, Users, Upload, BadgeCheck, Trophy, MessageSquare, Clock } from "lucide-react";
 import TeamAnnouncements from "@/components/TeamAnnouncements";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -18,14 +18,6 @@ type TeamMember = {
   role: "admin" | "assistant" | "member";
 };
 
-type Team = {
-  id: string;
-  name: string;
-  logo?: string;
-  members: TeamMember[];
-  announcements: TeamAnnouncement[];
-};
-
 type TeamAnnouncement = {
   id: string;
   title: string;
@@ -34,19 +26,62 @@ type TeamAnnouncement = {
   authorName: string;
 };
 
+type TeamEvent = {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  startTime?: string;
+  endTime?: string;
+  isArchived: boolean;
+};
+
+type TeamChat = {
+  id: string;
+  messages: TeamChatMessage[];
+};
+
+type TeamChatMessage = {
+  id: string;
+  senderName: string;
+  content: string;
+  timestamp: string;
+};
+
+type Team = {
+  id: string;
+  name: string;
+  logo?: string;
+  members: TeamMember[];
+  announcements: TeamAnnouncement[];
+  events: TeamEvent[];
+  chat: TeamChat;
+  archivedEvents: TeamEvent[];
+};
+
 const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
   const [userTeam, setUserTeam] = useState<Team | null>(null);
   const [teamName, setTeamName] = useState("");
   const [teamLogo, setTeamLogo] = useState<string | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [activeTab, setActiveTab] = useState("info");
+  const [chatMessage, setChatMessage] = useState("");
   const { toast } = useToast();
 
   // Load team data on component mount
   useEffect(() => {
     const savedTeam = localStorage.getItem("userTeam");
     if (savedTeam) {
-      setUserTeam(JSON.parse(savedTeam));
+      const team = JSON.parse(savedTeam);
+      // Initialize events array if it doesn't exist
+      if (!team.events) team.events = [];
+      // Initialize chat if it doesn't exist
+      if (!team.chat) team.chat = { id: Date.now().toString(), messages: [] };
+      // Initialize archivedEvents array if it doesn't exist
+      if (!team.archivedEvents) team.archivedEvents = [];
+      
+      setUserTeam(team);
     }
     
     // Get the current user's pilot name
@@ -63,6 +98,35 @@ const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
   useEffect(() => {
     if (userTeam) {
       localStorage.setItem("userTeam", JSON.stringify(userTeam));
+    }
+  }, [userTeam]);
+  
+  // Effect for checking event end dates and archiving expired events
+  useEffect(() => {
+    if (!userTeam || !userTeam.events) return;
+    
+    const now = new Date();
+    const currentEvents = [...userTeam.events];
+    const expiredEvents: TeamEvent[] = [];
+    
+    // Find events that have passed their end date
+    const activeEvents = currentEvents.filter(event => {
+      const endDate = new Date(event.endDate);
+      const hasExpired = endDate < now;
+      if (hasExpired) {
+        expiredEvents.push({...event, isArchived: true});
+      }
+      return !hasExpired;
+    });
+    
+    // If we have expired events, update the team data
+    if (expiredEvents.length > 0) {
+      const updatedTeam = {
+        ...userTeam,
+        events: activeEvents,
+        archivedEvents: [...(userTeam.archivedEvents || []), ...expiredEvents]
+      };
+      setUserTeam(updatedTeam);
     }
   }, [userTeam]);
 
@@ -94,7 +158,10 @@ const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
       name: teamName,
       logo: teamLogo || undefined,
       members: teamMembers,
-      announcements: userTeam?.announcements || []
+      announcements: userTeam?.announcements || [],
+      events: userTeam?.events || [],
+      archivedEvents: userTeam?.archivedEvents || [],
+      chat: userTeam?.chat || { id: Date.now().toString(), messages: [] }
     };
 
     setUserTeam(newTeam);
@@ -158,10 +225,78 @@ const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
       description: "Your team announcement has been published.",
     });
   };
+  
+  // Add team event
+  const handleAddEvent = (event: TeamEvent) => {
+    if (!userTeam) return;
+    
+    const updatedTeam = {
+      ...userTeam,
+      events: [...userTeam.events, event]
+    };
+    
+    setUserTeam(updatedTeam);
+    
+    toast({
+      title: "Event Added",
+      description: "Your team event has been created.",
+    });
+  };
+  
+  // Send chat message
+  const handleSendMessage = () => {
+    if (!userTeam || !chatMessage.trim()) return;
+    
+    const pilotInfo = JSON.parse(localStorage.getItem("pilotRegistration") || "{}");
+    const newMessage: TeamChatMessage = {
+      id: Date.now().toString(),
+      senderName: pilotInfo.pilot || "Unknown",
+      content: chatMessage,
+      timestamp: new Date().toISOString()
+    };
+    
+    const updatedChat = {
+      ...userTeam.chat,
+      messages: [...userTeam.chat.messages, newMessage]
+    };
+    
+    setUserTeam({
+      ...userTeam,
+      chat: updatedChat
+    });
+    
+    setChatMessage("");
+  };
+  
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+  
+  // Format timestamp for chat messages
+  const formatTimestamp = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    };
+    return new Date(dateString).toLocaleTimeString(undefined, options);
+  };
 
   const teamLapTimes = getTeamLapTimes();
   const bestLapsByTrack = getBestLapsByTrack();
   const canManageTeam = isTeamManager();
+  
+  // Get current username
+  const getCurrentUsername = () => {
+    const pilotInfo = JSON.parse(localStorage.getItem("pilotRegistration") || "{}");
+    return pilotInfo.pilot || "Unknown";
+  };
 
   return (
     <div className="bg-racing-black text-white">
@@ -238,6 +373,18 @@ const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
                 className="flex-1 data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
               >
                 Announcements
+              </TabsTrigger>
+              <TabsTrigger 
+                value="events" 
+                className="flex-1 data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
+              >
+                Events
+              </TabsTrigger>
+              <TabsTrigger 
+                value="chat" 
+                className="flex-1 data-[state=active]:bg-racing-red data-[state=active]:text-white text-racing-silver"
+              >
+                Team Chat
               </TabsTrigger>
             </TabsList>
 
@@ -373,6 +520,7 @@ const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
                             <th className="py-2 px-3 text-left text-xs font-formula tracking-wider">DRIVER</th>
                             <th className="py-2 px-3 text-left text-xs font-formula tracking-wider">TRACK</th>
                             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider">LAP TIME</th>
+                            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider">DATE</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -384,6 +532,9 @@ const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
                                 <td className="py-1.5 px-3 text-left">{lap.driverName}</td>
                                 <td className="py-1.5 px-3 text-left">{lap.trackId}</td>
                                 <td className="py-1.5 px-3 text-center font-formula font-bold">{lap.lapTime}</td>
+                                <td className="py-1.5 px-3 text-center text-xs text-racing-silver">
+                                  {lap.date ? formatDate(lap.date) : '-'}
+                                </td>
                               </tr>
                             ))}
                         </tbody>
@@ -400,6 +551,191 @@ const TeamArea: React.FC<TeamAreaProps> = ({ lapTimes }) => {
                 canManage={canManageTeam} 
                 onAddAnnouncement={handleAddAnnouncement}
               />
+            </TabsContent>
+            
+            <TabsContent value="events" className="mt-4 p-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="col-span-1 lg:col-span-2">
+                  <div className="bg-racing-red p-2 flex justify-between items-center mb-1">
+                    <h3 className="text-white font-formula text-lg tracking-wider">TEAM EVENTS</h3>
+                    {canManageTeam && (
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        className="bg-transparent border-white/30 hover:bg-white/20 text-white text-xs"
+                        onClick={() => {
+                          // Open event creation modal or switch to relevant UI
+                          toast({
+                            title: "Create Event",
+                            description: "Event creation form would appear here."
+                          });
+                        }}
+                      >
+                        + New Event
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Team Events List */}
+                  {(userTeam.events && userTeam.events.length > 0) ? (
+                    <div className="space-y-2">
+                      {userTeam.events.map(event => {
+                        // Calculate days remaining until event expires
+                        const endDate = new Date(event.endDate);
+                        const today = new Date();
+                        const daysRemaining = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                        
+                        return (
+                          <div 
+                            key={event.id} 
+                            className="bg-racing-darkgrey p-4 rounded border border-racing-grey"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-formula text-racing-red">{event.title}</h4>
+                                <p className="text-sm text-white mt-1">{event.description}</p>
+                              </div>
+                              <div className="text-right">
+                                <div className="flex items-center gap-1 text-racing-silver text-xs">
+                                  <Calendar size={14} />
+                                  <span>Visible for {daysRemaining} more day{daysRemaining !== 1 ? 's' : ''}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 text-sm">
+                              <div className="flex items-center gap-1 text-racing-silver">
+                                <Calendar size={14} className="text-racing-red" />
+                                <span>Start: {formatDate(event.startDate)}</span>
+                                {event.startTime && (
+                                  <span className="ml-1">at {event.startTime}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 text-racing-silver">
+                                <Calendar size={14} className="text-racing-red" />
+                                <span>End: {formatDate(event.endDate)}</span>
+                                {event.endTime && (
+                                  <span className="ml-1">at {event.endTime}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center p-8 bg-racing-darkgrey">
+                      <p className="text-racing-silver">No active events found.</p>
+                      {canManageTeam && (
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 border-racing-red bg-transparent hover:bg-racing-red/20 text-racing-red"
+                        >
+                          Create First Event
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="col-span-1">
+                  <div className="bg-racing-red p-2 flex justify-between items-center mb-1">
+                    <h3 className="text-white font-formula text-lg tracking-wider">ARCHIVED EVENTS</h3>
+                  </div>
+                  
+                  {/* Archived Events */}
+                  <div className="bg-racing-darkgrey max-h-96 overflow-y-auto p-1">
+                    {userTeam.archivedEvents && userTeam.archivedEvents.length > 0 ? (
+                      <div className="space-y-1 p-1">
+                        {userTeam.archivedEvents.map(event => (
+                          <div 
+                            key={event.id}
+                            className="p-2 border border-racing-grey/30 rounded bg-racing-black hover:bg-racing-darkgrey/50 cursor-pointer"
+                          >
+                            <div className="flex justify-between items-start">
+                              <h5 className="text-sm font-formula text-white">{event.title}</h5>
+                              <span className="text-xs text-racing-silver">{formatDate(event.endDate)}</span>
+                            </div>
+                            <p className="text-xs text-racing-silver mt-1 line-clamp-2">{event.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-racing-silver text-sm">No archived events.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="chat" className="mt-4 p-4">
+              <div className="bg-racing-darkgrey rounded-sm border border-racing-grey">
+                <div className="bg-racing-red p-2 flex items-center gap-2">
+                  <MessageSquare size={16} className="text-white" />
+                  <h3 className="font-formula text-white text-lg">TEAM CHAT</h3>
+                </div>
+                
+                <div className="h-80 overflow-y-auto p-3 flex flex-col space-y-2">
+                  {userTeam.chat && userTeam.chat.messages && userTeam.chat.messages.length > 0 ? (
+                    userTeam.chat.messages.map((msg) => {
+                      const isCurrentUser = msg.senderName === getCurrentUsername();
+                      
+                      return (
+                        <div 
+                          key={msg.id}
+                          className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div className={`max-w-[80%] p-2 rounded-md ${
+                            isCurrentUser 
+                              ? 'bg-racing-red text-white rounded-br-none' 
+                              : 'bg-racing-grey/20 text-white rounded-bl-none'
+                          }`}>
+                            {!isCurrentUser && (
+                              <p className="text-xs font-bold text-racing-red mb-1">{msg.senderName}</p>
+                            )}
+                            <p className="text-sm">{msg.content}</p>
+                            <p className={`text-xs ${isCurrentUser ? 'text-white/70' : 'text-racing-silver'} text-right mt-1`}>
+                              {formatTimestamp(msg.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-racing-silver">
+                      <MessageSquare size={24} className="mb-2" />
+                      <p>No messages yet. Start the conversation!</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-2 border-t border-racing-grey">
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                      placeholder="Type your message..."
+                      className="bg-racing-black border-racing-grey text-white"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!chatMessage.trim()}
+                      className="bg-racing-red hover:bg-racing-red/80"
+                    >
+                      Send
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

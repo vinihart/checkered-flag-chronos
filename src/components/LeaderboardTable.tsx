@@ -1,7 +1,7 @@
 
 import React from "react";
 import { LapTime, Car, Team, Track, MOCK_CARS, MOCK_TEAMS, MOCK_TRACKS } from "@/types/racing";
-import { AlertTriangle, ArrowDown, ArrowUp, Flag, Minus } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Calendar, Flag, Minus } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -77,6 +77,18 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     );
   };
 
+  // Format date display
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
   // Filter to show only current user's times if needed
   const filteredTimes = showOnlyMyTimes ? lapTimes.filter(lapTime => {
     const pilotInfo = JSON.parse(localStorage.getItem("pilotRegistration") || "{}");
@@ -98,13 +110,14 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             )}
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">DIFF</th>
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">+/-</th>
+            <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-16 hidden md:table-cell">DATE</th>
             <th className="py-2 px-3 text-center text-xs font-formula tracking-wider w-12">ACTION</th>
           </tr>
         </thead>
         <tbody>
           {filteredTimes.length === 0 ? (
             <tr>
-              <td colSpan={activeTrack ? 8 : 9} className="py-4 text-center text-racing-silver">
+              <td colSpan={activeTrack ? 9 : 10} className="py-4 text-center text-racing-silver">
                 No lap times recorded yet. Be the first to submit your time!
               </td>
             </tr>
@@ -168,6 +181,13 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                   </td>
                   <td className="py-1.5 px-3 text-center">
                     {renderPositionChange(lapTime.positionChange)}
+                  </td>
+                  <td className="py-1.5 px-3 text-center hidden md:table-cell text-xs text-racing-silver">
+                    {lapTime.date ? (
+                      <span className="whitespace-nowrap">
+                        {formatDate(lapTime.date)}
+                      </span>
+                    ) : "-"}
                   </td>
                   <td className="py-1.5 px-3 text-center">
                     {/* Report button */}
