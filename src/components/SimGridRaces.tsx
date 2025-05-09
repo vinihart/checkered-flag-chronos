@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
 interface Race {
@@ -92,7 +91,7 @@ const SimGridRaces = () => {
       <div className="bg-racing-darkgrey p-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar size={16} className="text-racing-red" />
-          <h2 className="font-formula text-base">NEXT TEAM'S EVENTS</h2>
+          <h2 className="font-formula text-base">SIMGRID RACES</h2>
         </div>
         <a 
           href="https://www.thesimgrid.com/seasons" 
