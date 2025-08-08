@@ -10,6 +10,7 @@ import TeamArea from "@/components/TeamArea";
 import EventsPanel from "@/components/EventsPanel";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SimGridRaces from "@/components/SimGridRaces";
+import LeaderboardFilters from "@/components/LeaderboardFilters";
 
 const Index = () => {
   // State for lap times
@@ -29,6 +30,11 @@ const Index = () => {
   // Current tab
   const [activeTab, setActiveTab] = useState("general");
   
+  // Leaderboard filters
+  const [selectedCarFilter, setSelectedCarFilter] = useState<string>("all_cars");
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>("");
+  
+  // Navigation and toast
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -58,15 +64,30 @@ const Index = () => {
     localStorage.setItem("lapTimes", JSON.stringify(lapTimes));
   }, [lapTimes]);
   
-  // Filter lap times based on selected track
-  const filteredLapTimes = lapTimes.filter(lap => {
-    // Track filter
-    if (activeTrack && lap.trackId !== activeTrack.id) {
-      return false;
-    }
-    
-    return true;
-  }).sort((a, b) => a.lapTimeMs - b.lapTimeMs);
+  // Filter lap times based on selected track and filters
+  const filteredLapTimes = lapTimes
+    .filter((lap) => {
+      // Track filter
+      if (activeTrack && lap.trackId !== activeTrack.id) {
+        return false;
+      }
+
+      // Car filter
+      if (selectedCarFilter !== "all_cars" && lap.carId !== selectedCarFilter) {
+        return false;
+      }
+
+      // Team filter (substring, case-insensitive)
+      if (selectedTeamFilter.trim()) {
+        const teamName = (lap.teamId || "").toLowerCase();
+        if (!teamName.includes(selectedTeamFilter.trim().toLowerCase())) {
+          return false;
+        }
+      }
+
+      return true;
+    })
+    .sort((a, b) => a.lapTimeMs - b.lapTimeMs);
   
   // Add or update lap time
   const handleSubmitLapTime = (newLapTime: LapTime) => {
@@ -226,6 +247,17 @@ const Index = () => {
                       {filteredLapTimes.length} {filteredLapTimes.length === 1 ? "Entry" : "Entries"}
                     </div>
                   </div>
+
+                  <LeaderboardFilters
+                    selectedCarFilter={selectedCarFilter}
+                    setSelectedCarFilter={setSelectedCarFilter}
+                    selectedTeamFilter={selectedTeamFilter}
+                    setSelectedTeamFilter={setSelectedTeamFilter}
+                    resetFilters={() => {
+                      setSelectedCarFilter("all_cars");
+                      setSelectedTeamFilter("");
+                    }}
+                  />
                   
                   {/* Track Information */}
                   {activeTrack && (
@@ -269,6 +301,17 @@ const Index = () => {
               <div className="bg-racing-red p-2 flex justify-between items-center mb-1">
                 <h2 className="text-white font-formula text-lg tracking-wider">MY LAP TIMES</h2>
               </div>
+
+              <LeaderboardFilters
+                selectedCarFilter={selectedCarFilter}
+                setSelectedCarFilter={setSelectedCarFilter}
+                selectedTeamFilter={selectedTeamFilter}
+                setSelectedTeamFilter={setSelectedTeamFilter}
+                resetFilters={() => {
+                  setSelectedCarFilter("all_cars");
+                  setSelectedTeamFilter("");
+                }}
+              />
               
               {/* Track Information */}
               {activeTrack && (
