@@ -8,6 +8,7 @@ import Registration from "./pages/Registration";
 import Login from "./pages/Login";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -18,8 +19,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Registration />} />
+          <Route path="/" element={<Navigate to="/auth" />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Registration />} />
           <Route path="/leaderboard" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
