@@ -41,14 +41,13 @@ const Auth = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        // Redirect when signed in
+      // Only redirect on explicit sign-in to avoid interfering with typing
+      if (event === 'SIGNED_IN' && session?.user) {
         window.location.href = "/leaderboard";
       }
     });
     return () => subscription.unsubscribe();
   }, []);
-
   const emailRedirectTo = useMemo(() => `${window.location.origin}/leaderboard`, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -106,11 +105,11 @@ const Auth = () => {
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" inputMode="email" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Senha</Label>
-                  <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Entrando..." : "Entrar"}
@@ -122,11 +121,11 @@ const Auth = () => {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email2">Email</Label>
-                  <Input id="email2" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Input id="email2" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" inputMode="email" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password2">Senha</Label>
-                  <Input id="password2" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <Input id="password2" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Criando..." : "Criar conta"}
