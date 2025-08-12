@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { LapTime, Track, MOCK_LAP_TIMES, MOCK_TRACKS, MOCK_EVENTS, detectAnomalies, reportLapTime, clearReviewFlag } from "@/types/racing";
 import RacingHeader from "@/components/RacingHeader";
 import LeaderboardTable from "@/components/LeaderboardTable";
@@ -38,26 +39,33 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Check if user is logged in and admin
+  // Require Supabase-authenticated user
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    if (!isLoggedIn) {
-      navigate("/login");
-      return;
-    }
-    
-    // For demo purposes, checking if admin (in production, this would be server-side)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        navigate("/auth");
+      }
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) {
+        navigate("/auth");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+  
+  // Initialize admin flag and load lap times (local demo data)
+  useEffect(() => {
     const username = localStorage.getItem("username");
     setIsAdmin(username === "admin");
-    
-    // Load stored lap times from localStorage if available
+
     const storedLapTimes = localStorage.getItem("lapTimes");
     if (storedLapTimes) {
       setLapTimes(JSON.parse(storedLapTimes));
     } else {
       setLapTimes(MOCK_LAP_TIMES);
     }
-  }, [navigate]);
+  }, []);
   
   // Save lap times to localStorage whenever they change
   useEffect(() => {
